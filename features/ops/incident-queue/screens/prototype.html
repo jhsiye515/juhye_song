@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>인시던트 처리 큐 화면 설계서</title>
+<style>/* OPS 제품 양식 · 화면 설계서와 제품 화면이 함께 쓰는 CSS 한 장
+   장 순서: 1 토큰, 2 바탕, 3 제품 틀(왼쪽 메뉴 · 머리말), 4 부품, 5 화면 설계서 틀, 6 좁은 화면.
+   포털 양식(tools/site/ds/portal.css)과 따로 둔다. 제품 화면과 포털이 서로 다르게 보여야 어느 쪽이 제품인지 헷갈리지 않는다. */
+
+/* ───────── 1. 토큰 ───────── */
+:root{
+  --bg:#f6f6f3; --surface:#ffffff; --surface-2:#f1f1ec; --surface-3:#e7e7e0;
+  --ink:#1d1d1b; --ink-2:#4a4a45; --ink-3:#77776f; --line:#e2e2da; --line-2:#cfcfc5;
+  --acc:#4338ca; --acc-ink:#3730a3; --acc-soft:#eef0ff; --acc-line:#c7cbf5;
+  --nav:#1f1e2e; --nav-ink:#d9d8e8; --nav-ink-2:#9897b0; --nav-on:#ffffff; --nav-hi:#2f2d45;
+  /* 상태 색: 정해진 뜻에만 쓴다 */
+  --ok:#1f7a4d; --ok-soft:#e5f4ec; --warn:#a15c07; --warn-soft:#fdf1df; --bad:#b42318; --bad-soft:#fde8e6;
+  --info:#2e5aac; --info-soft:#e8eefb; --mute:#6b6b63; --mute-soft:#ececE6;
+  /* 우선순위 */
+  --p1:#b42318; --p2:#c4570c; --p3:#a17c07; --p4:#6b6b63;
+  /* 클라우드 계열(차트) */
+  --c1:#4338ca; --c2:#0e9384; --c3:#c4570c; --c4:#8a8a80;
+  --r-s:6px; --r-m:10px; --r-l:14px;
+  --sh:0 1px 2px rgba(29,29,27,.06),0 1px 1px rgba(29,29,27,.04);
+  --f:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+
+/* ───────── 2. 바탕 ───────── */
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:14px/1.5 var(--f);color:var(--ink);background:var(--bg);word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:700;text-wrap:balance}
+button{font:inherit;cursor:pointer}
+.mono{font-family:var(--mono);font-size:12.5px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-3)}
+
+/* ───────── 3. 제품 틀 ───────── */
+.app{display:grid;grid-template-columns:208px 1fr;min-height:100%;background:var(--bg)}
+.nav{background:var(--nav);color:var(--nav-ink);padding:16px 10px;display:flex;flex-direction:column;gap:2px}
+.nav .logo{display:flex;align-items:center;gap:8px;padding:4px 8px 16px;color:var(--nav-on);font-weight:800;letter-spacing:.2px}
+.nav .logo i{width:22px;height:22px;border-radius:6px;background:var(--acc);display:inline-block}
+.nav .grp{font-size:11px;color:var(--nav-ink-2);padding:12px 8px 4px}
+.nav a{display:block;padding:7px 10px;border-radius:7px;color:var(--nav-ink);text-decoration:none;font-size:13.5px}
+.nav a.on{background:var(--nav-hi);color:var(--nav-on);font-weight:600}
+.main{min-width:0;display:flex;flex-direction:column}
+.top{height:52px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid var(--line);background:var(--surface)}
+.top .crumb{color:var(--ink-3);font-size:13px}
+.top .crumb b{color:var(--ink);font-weight:600}
+.top .sp{flex:1}
+.top .who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
+.top .who i{width:26px;height:26px;border-radius:50%;background:var(--acc-soft);color:var(--acc-ink);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:12px}
+.page{padding:20px 24px 32px;display:flex;flex-direction:column;gap:16px}
+.phead{display:flex;align-items:flex-end;gap:12px}
+.phead h1{font-size:22px}
+.phead p{margin:2px 0 0;color:var(--ink-3);font-size:13px}
+.phead .sp{flex:1}
+
+/* ───────── 4. 부품 ───────── */
+.btn{height:34px;padding:0 14px;border-radius:var(--r-s);border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-weight:600;font-size:13px}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.sm{height:28px;padding:0 10px;font-size:12.5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh)}
+.card>.hd{display:flex;align-items:center;gap:8px;padding:14px 16px 0}
+.card>.hd h2{font-size:15px}
+.card>.hd .sp{flex:1}
+.card>.bd{padding:12px 16px 16px}
+
+/* 숫자 칸 */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{padding:14px 16px}
+.kpi .k{font-size:12.5px;color:var(--ink-3)}
+.kpi .v{font-size:26px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:13px;font-weight:600;color:var(--ink-3);margin-left:3px}
+.kpi .s{font-size:12px;color:var(--ink-3);margin-top:2px}
+.kpi.bad .v{color:var(--bad)} .kpi.warn .v{color:var(--warn)}
+
+/* 빠른 보기 · 탭 */
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:6px;height:28px;padding:0 12px;font-size:13px;color:var(--ink-2)}
+.seg button.on{background:var(--surface);color:var(--ink);font-weight:700;box-shadow:var(--sh)}
+.seg button em{font-style:normal;color:var(--ink-3);margin-left:4px;font-variant-numeric:tabular-nums}
+.tabs{display:flex;gap:18px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:10px 0;font-size:13.5px;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--ink);font-weight:700;border-color:var(--ink)}
+
+/* 필터 줄 */
+.fbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.sel{height:32px;border:1px solid var(--line-2);border-radius:var(--r-s);background:var(--surface);padding:0 28px 0 10px;font:inherit;font-size:13px;color:var(--ink);appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),linear-gradient(135deg,var(--ink-3) 50%,transparent 50%);background-position:calc(100% - 14px) 14px,calc(100% - 10px) 14px;background-size:4px 4px;background-repeat:no-repeat}
+.search{height:32px;border:1px solid var(--line-2);border-radius:var(--r-s);padding:0 10px;font:inherit;font-size:13px;min-width:200px;background:var(--surface)}
+.applied{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--ink-3)}
+.applied .tag{display:inline-flex;align-items:center;gap:4px;background:var(--acc-soft);color:var(--acc-ink);border-radius:999px;padding:2px 10px;font-weight:600}
+
+/* 배지 */
+.bdg{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.bdg::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.bdg.ok{background:var(--ok-soft);color:var(--ok)} .bdg.warn{background:var(--warn-soft);color:var(--warn)}
+.bdg.bad{background:var(--bad-soft);color:var(--bad)} .bdg.info{background:var(--info-soft);color:var(--info)}
+.bdg.mute{background:var(--surface-2);color:var(--mute)}
+.prio{display:inline-grid;place-items:center;width:28px;height:20px;border-radius:5px;font-size:11.5px;font-weight:800;color:#fff;font-family:var(--mono)}
+.prio.P1{background:var(--p1)} .prio.P2{background:var(--p2)} .prio.P3{background:var(--p3)} .prio.P4{background:var(--p4)}
+
+/* 표 */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;color:var(--ink-3);font-size:12px;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr.row{cursor:pointer}
+.tbl tr.row:hover td{background:#fafaf7}
+.tbl tr.sel td{background:var(--acc-soft)}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl .ttl{font-weight:600}
+.tbl .sub{font-size:12px;color:var(--ink-3)}
+.tblwrap{overflow:auto;border-radius:0 0 var(--r-l) var(--r-l)}
+.pager{display:flex;align-items:center;gap:8px;justify-content:flex-end;padding:10px 16px;font-size:12.5px;color:var(--ink-3)}
+
+/* 경과 막대: 목표 시간 대비 */
+.elapsed{display:flex;align-items:center;gap:8px;min-width:150px}
+.elapsed .bar{position:relative;flex:1;height:6px;border-radius:3px;background:var(--surface-3);overflow:hidden}
+.elapsed .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--ok)}
+.elapsed .bar i.warn{background:var(--warn)} .elapsed .bar i.bad{background:var(--bad)}
+.elapsed span{font-size:12px;color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums;min-width:62px;text-align:right}
+
+/* 사이드 패널 */
+.split{display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start}
+.panel{position:sticky;top:12px}
+.panel .hd{flex-wrap:wrap}
+.kv{display:grid;grid-template-columns:92px 1fr;gap:6px 12px;font-size:13px}
+.kv dt{color:var(--ink-3)} .kv dd{margin:0}
+.tl{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.tl li{position:relative;padding:0 0 12px 10px;font-size:13px}
+.tl li::before{content:"";position:absolute;left:-21px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--acc)}
+.tl li b{font-weight:600} .tl li span{display:block;font-size:12px;color:var(--ink-3)}
+
+/* 작은 차트 */
+.spark{display:block}
+.chart{width:100%;display:block}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink-2);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.meter{height:6px;border-radius:3px;background:var(--surface-3);overflow:hidden;width:80px;display:inline-block;vertical-align:middle}
+.meter i{display:block;height:100%;background:var(--acc)}
+.meter i.warn{background:var(--warn)} .meter i.bad{background:var(--bad)}
+.delta.up{color:var(--bad)} .delta.down{color:var(--ok)}
+.empty{padding:40px 16px;text-align:center;color:var(--ink-3)}
+
+/* ───────── 5. 화면 설계서 틀 ───────── */
+.sb{display:grid;grid-template-rows:auto 1fr;height:100vh;background:#e9e9e3}
+.sb-top{display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.sb-top h1{font-size:15px}
+.sb-top .code{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.sb-top .sp{flex:1}
+.sb-top .sample{font-size:11.5px;color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:2px 10px;font-weight:600}
+.sb-scr{display:flex;gap:4px}
+.sb-scr button{border:1px solid var(--line);background:var(--surface);border-radius:7px;height:30px;padding:0 12px;font-size:12.5px;color:var(--ink-2)}
+.sb-scr button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+.sb-body{display:grid;grid-template-columns:1fr 380px;min-height:0}
+.sb-canvas{overflow:auto;padding:20px}
+.sb-frame{position:relative;width:1280px;max-width:100%;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);background:var(--bg)}
+.sb-desc{background:var(--surface);border-left:1px solid var(--line);overflow:auto;padding:18px 18px 40px}
+.sb-desc h2{font-size:16px}
+.sb-desc .purpose{color:var(--ink-2);font-size:13px;margin:6px 0 14px}
+.sb-desc .spot{border-top:1px solid var(--line);padding:12px 0}
+.sb-desc .spot h3{display:flex;align-items:center;gap:8px;font-size:13.5px}
+.sb-desc .spot ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-2)}
+.sb-desc .spot li{margin:2px 0}
+.sb-desc .spot.hi{background:var(--acc-soft);margin:0 -18px;padding:12px 18px}
+.sb-desc .ids{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:6px}
+.sb-desc .opt{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-3);margin-top:10px}
+.mk{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:10px;background:var(--acc);color:#fff;font-size:11px;font-weight:800;font-family:var(--mono);padding:0 5px}
+.sb-frame .mk{position:absolute;z-index:5;box-shadow:0 0 0 2px #fff;cursor:pointer}
+.sb.nomk .sb-frame .mk{display:none}
+[data-spot].spot-hi{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+
+/* ───────── 6. 좁은 화면 ───────── */
+@media (max-width:1100px){.sb-body{grid-template-columns:1fr}.sb-desc{border-left:0;border-top:1px solid var(--line)}.split{grid-template-columns:1fr}.panel{position:static}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.nav{display:none}.kpis{grid-template-columns:repeat(2,1fr)}.sb-canvas{padding:8px}}
+
+/* 좁은 칸에서 줄이 끊기지 않게 */
+.seg button,.tbl .mono,.bdg,.btn{white-space:nowrap}
+.card>.hd{flex-wrap:wrap;row-gap:10px}
+.split{grid-template-columns:minmax(0,1fr) 330px}
+.tbl td.num,.tbl td.r{white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="sb" id="sb">
+  <div class="sb-top">
+    <h1>인시던트 처리 큐</h1><span class="code">INC</span>
+    <div class="sb-scr" id="scrs"></div>
+    <span class="sp"></span>
+    <span class="sample">예시 데이터</span>
+  </div>
+  <div class="sb-body">
+    <div class="sb-canvas"><div class="sb-frame" id="frame"></div></div>
+    <aside class="sb-desc" id="desc"></aside>
+  </div>
+</div>
+<script>
+const DATA = {"now":"2026-11-16 09:00","users":[{"id":"U01","name":"김하늘","email":"user01@example.com","dept":"인프라운영팀","role":"관리자"},{"id":"U02","name":"이예린","email":"user02@example.com","dept":"인프라운영팀","role":"관리자"},{"id":"U03","name":"박건우","email":"user03@example.com","dept":"데이터팀","role":"운영자"},{"id":"U04","name":"최지호","email":"user04@example.com","dept":"고객지원팀","role":"조회자"},{"id":"U05","name":"정주원","email":"user05@example.com","dept":"인프라운영팀","role":"관리자"},{"id":"U06","name":"강도윤","email":"user06@example.com","dept":"플랫폼개발팀","role":"운영자"},{"id":"U07","name":"조시우","email":"user07@example.com","dept":"주문서비스팀","role":"운영자"},{"id":"U08","name":"윤수아","email":"user08@example.com","dept":"데이터팀","role":"조회자"},{"id":"U09","name":"장민준","email":"user09@example.com","dept":"고객지원팀","role":"관리자"},{"id":"U10","name":"임채원","email":"user10@example.com","dept":"인프라운영팀","role":"운영자"},{"id":"U11","name":"한서연","email":"user11@example.com","dept":"플랫폼개발팀","role":"운영자"},{"id":"U12","name":"오다은","email":"user12@example.com","dept":"주문서비스팀","role":"조회자"}],"projects":[{"id":"PRJ-01","name":"쇼핑몰 웹","dept":"주문서비스팀"},{"id":"PRJ-02","name":"주문 API","dept":"주문서비스팀"},{"id":"PRJ-03","name":"결제 연동","dept":"플랫폼개발팀"},{"id":"PRJ-04","name":"회원 인증","dept":"플랫폼개발팀"},{"id":"PRJ-05","name":"추천 분석","dept":"데이터팀"},{"id":"PRJ-06","name":"데이터 웨어하우스","dept":"데이터팀"},{"id":"PRJ-07","name":"상담 챗봇","dept":"고객지원팀"},{"id":"PRJ-08","name":"공통 인프라","dept":"인프라운영팀"}],"incidents":[{"id":"INC-001","title":"infra-04 CPU 사용률 80% 이상","priority":"P4","state":"종료","server":"SV-052","project":"PRJ-08","assignee":"U11","opened":"2026-10-18 05:19","resolved":"2026-10-20 00:31","target_hours":72,"within_target":true,"cause":"배포 후 설정 누락","alerts":["AL-0009"],"timeline":[{"time":"2026-10-18 05:19","event":"생성","by":"시스템"},{"time":"2026-10-18 05:49","event":"처리 시작","by":"한서연"},{"time":"2026-10-20 00:31","event":"해결","by":"한서연"},{"time":"2026-10-21 08:31","event":"종료","by":"강도윤"}]},{"id":"INC-002","title":"pay-08 디스크 사용률 85% 이상","priority":"P4","state":"종료","server":"SV-020","project":"PRJ-03","assignee":"U11","opened":"2026-10-18 06:44","resolved":"2026-10-18 21:08","target_hours":72,"within_target":true,"cause":"메모리 누수","alerts":["AL-0011","AL-0013"],"timeline":[{"time":"2026-10-18 06:44","event":"생성","by":"시스템"},{"time":"2026-10-18 07:18","event":"처리 시작","by":"한서연"},{"time":"2026-10-18 21:08","event":"해결","by":"한서연"},{"time":"2026-10-19 02:08","event":"종료","by":"김하늘"}]},{"id":"INC-003","title":"dw-03 CPU 사용률 80% 이상","priority":"P3","state":"종료","server":"SV-037","project":"PRJ-06","assignee":"U09","opened":"2026-10-18 08:44","resolved":"2026-10-18 23:08","target_hours":24,"within_target":true,"cause":"인증서 갱신 누락","alerts":["AL-0016"],"timeline":[{"time":"2026-10-18 08:44","event":"생성","by":"시스템"},{"time":"2026-10-18 09:24","event":"처리 시작","by":"장민준"},{"time":"2026-10-18 23:08","event":"해결","by":"장민준"},{"time":"2026-10-22 03:08","event":"종료","by":"한서연"}]},{"id":"INC-004","title":"api-03 응답 시간 3초 이상","priority":"P4","state":"종료","server":"SV-009","project":"PRJ-02","assignee":"U03","opened":"2026-10-19 04:54","resolved":"2026-10-20 09:42","target_hours":72,"within_target":true,"cause":"네트워크 장비 점검 영향","alerts":["AL-0028"],"timeline":[{"time":"2026-10-19 04:54","event":"생성","by":"시스템"},{"time":"2026-10-19 05:25","event":"처리 시작","by":"박건우"},{"time":"2026-10-20 09:42","event":"해결","by":"박건우"},{"time":"2026-10-24 02:42","event":"종료","by":"박건우"}]},{"id":"INC-005","title":"pay-07 CPU 사용률 80% 이상","priority":"P3","state":"종료","server":"SV-019","project":"PRJ-03","assignee":"U02","opened":"2026-10-21 01:42","resolved":"2026-10-22 08:54","target_hours":24,"within_target":false,"cause":"메모리 누수","alerts":["AL-0043"],"timeline":[{"time":"2026-10-21 01:42","event":"생성","by":"시스템"},{"time":"2026-10-21 02:12","event":"처리 시작","by":"이예린"},{"time":"2026-10-22 08:54","event":"해결","by":"이예린"},{"time":"2026-10-23 03:54","event":"종료","by":"임채원"}]},{"id":"INC-006","title":"auth-06 CPU 사용률 90% 이상","priority":"P3","state":"종료","server":"SV-026","project":"PRJ-04","assignee":"U05","opened":"2026-10-21 03:45","resolved":"2026-10-21 08:33","target_hours":24,"within_target":true,"cause":"인증서 갱신 누락","alerts":["AL-0045"],"timeline":[{"time":"2026-10-21 03:45","event":"생성","by":"시스템"},{"time":"2026-10-21 04:14","event":"처리 시작","by":"정주원"},{"time":"2026-10-21 08:33","event":"해결","by":"정주원"},{"time":"2026-10-21 13:33","event":"종료","by":"장민준"}]},{"id":"INC-007","title":"api-02 메모리 사용률 90% 이상","priority":"P1","state":"종료","server":"SV-008","project":"PRJ-02","assignee":"U07","opened":"2026-10-21 07:01","resolved":"2026-10-21 08:37","target_hours":4,"within_target":true,"cause":"외부 결제사 지연","alerts":["AL-0049"],"timeline":[{"time":"2026-10-21 07:01","event":"생성","by":"시스템"},{"time":"2026-10-21 07:07","event":"처리 시작","by":"조시우"},{"time":"2026-10-21 08:37","event":"해결","by":"조시우"},{"time":"2026-10-24 06:37","event":"종료","by":"임채원"}]},{"id":"INC-008","title":"api-03 응답 시간 3초 이상","priority":"P4","state":"종료","server":"SV-009","project":"PRJ-02","assignee":"U11","opened":"2026-10-23 21:18","resolved":"2026-10-27 18:54","target_hours":72,"within_target":false,"cause":"원인 조사 중","alerts":["AL-0071"],"timeline":[{"time":"2026-10-23 21:18","event":"생성","by":"시스템"},{"time":"2026-10-23 21:23","event":"처리 시작","by":"한서연"},{"time":"2026-10-27 18:54","event":"해결","by":"한서연"},{"time":"2026-10-27 22:54","event":"종료","by":"정주원"}]},{"id":"INC-009","title":"auth-08 CPU 사용률 90% 이상","priority":"P1","state":"종료","server":"SV-028","project":"PRJ-04","assignee":"U06","opened":"2026-10-24 10:16","resolved":"2026-10-24 13:52","target_hours":4,"within_target":true,"cause":"인증서 갱신 누락","alerts":["AL-0076"],"timeline":[{"time":"2026-10-24 10:16","event":"생성","by":"시스템"},{"time":"2026-10-24 10:59","event":"처리 시작","by":"강도윤"},{"time":"2026-10-24 13:52","event":"해결","by":"강도윤"},{"time":"2026-10-25 00:52","event":"종료","by":"정주원"}]},{"id":"INC-010","title":"api-03 CPU 사용률 80% 이상","priority":"P3","state":"종료","server":"SV-009","project":"PRJ-02","assignee":"U10","opened":"2026-10-25 13:01","resolved":"2026-10-25 17:49","target_hours":24,"within_target":true,"cause":"네트워크 장비 점검 영향","alerts":["AL-0088"],"timeline":[{"time":"2026-10-25 13:01","event":"생성","by":"시스템"},{"time":"2026-10-25 13:34","event":"처리 시작","by":"임채원"},{"time":"2026-10-25 17:49","event":"해결","by":"임채원"},{"time":"2026-10-26 04:49","event":"종료","by":"김하늘"}]},{"id":"INC-011","title":"web-01 응답 시간 3초 이상","priority":"P4","state":"종료","server":"SV-001","project":"PRJ-01","assignee":"U03","opened":"2026-10-26 16:30","resolved":"2026-11-01 16:30","target_hours":72,"within_target":false,"cause":"메모리 누수","alerts":["AL-0095"],"timeline":[{"time":"2026-10-26 16:30","event":"생성","by":"시스템"},{"time":"2026-10-26 17:14","event":"처리 시작","by":"박건우"},{"time":"2026-11-01 16:30","event":"해결","by":"박건우"},{"time":"2026-11-04 19:30","event":"종료","by":"정주원"}]},{"id":"INC-012","title":"api-03 응답 시간 3초 이상","priority":"P3","state":"종료","server":"SV-009","project":"PRJ-02","assignee":"U01","opened":"2026-10-26 20:50","resolved":"2026-10-27 11:14","target_hours":24,"within_target":true,"cause":"원인 조사 중","alerts":["AL-0098"],"timeline":[{"time":"2026-10-26 20:50","event":"생성","by":"시스템"},{"time":"2026-10-26 21:31","event":"처리 시작","by":"김하늘"},{"time":"2026-10-27 11:14","event":"해결","by":"김하늘"},{"time":"2026-10-28 21:14","event":"종료","by":"김하늘"}]},{"id":"INC-013","title":"bot-03 CPU 사용률 80% 이상","priority":"P3","state":"종료","server":"SV-043","project":"PRJ-07","assignee":"U11","opened":"2026-10-27 13:10","resolved":"2026-10-28 20:22","target_hours":24,"within_target":false,"cause":"트래픽 급증","alerts":["AL-0106"],"timeline":[{"time":"2026-10-27 13:10","event":"생성","by":"시스템"},{"time":"2026-10-27 13:57","event":"처리 시작","by":"한서연"},{"time":"2026-10-28 20:22","event":"해결","by":"한서연"},{"time":"2026-10-29 15:22","event":"종료","by":"이예린"}]},{"id":"INC-014","title":"api-03 응답 시간 3초 이상","priority":"P4","state":"종료","server":"SV-009","project":"PRJ-02","assignee":"U02","opened":"2026-10-28 02:05","resolved":"2026-10-29 21:17","target_hours":72,"within_target":true,"cause":"외부 결제사 지연","alerts":["AL-0112"],"timeline":[{"time":"2026-10-28 02:05","event":"생성","by":"시스템"},{"time":"2026-10-28 02:14","event":"처리 시작","by":"이예린"},{"time":"2026-10-29 21:17","event":"해결","by":"이예린"},{"time":"2026-11-02 17:17","event":"종료","by":"한서연"}]},{"id":"INC-015","title":"pay-08 디스크 사용률 85% 이상","priority":"P4","state":"종료","server":"SV-020","project":"PRJ-03","assignee":"U01","opened":"2026-10-28 18:11","resolved":"2026-11-01 15:47","target_hours":72,"within_target":false,"cause":"인증서 갱신 누락","alerts":["AL-0119","AL-0121"],"timeline":[{"time":"2026-10-28 18:11","event":"생성","by":"시스템"},{"time":"2026-10-28 18:54","event":"처리 시작","by":"김하늘"},{"time":"2026-11-01 15:47","event":"해결","by":"김하늘"},{"time":"2026-11-04 22:47","event":"종료","by":"조시우"}]},{"id":"INC-016","title":"api-02 디스크 사용률 85% 이상","priority":"P4","state":"종료","server":"SV-008","project":"PRJ-02","assignee":"U10","opened":"2026-10-29 03:51","resolved":"2026-11-04 03:51","target_hours":72,"within_target":false,"cause":"DB 연결 수 초과","alerts":["AL-0124"],"timeline":[{"time":"2026-10-29 03:51","event":"생성","by":"시스템"},{"time":"2026-10-29 04:37","event":"처리 시작","by":"임채원"},{"time":"2026-11-04 03:51","event":"해결","by":"임채원"},{"time":"2026-11-04 19:51","event":"종료","by":"한서연"}]},{"id":"INC-017","title":"auth-03 디스크 사용률 85% 이상","priority":"P4","state":"종료","server":"SV-023","project":"PRJ-04","assignee":"U10","opened":"2026-10-29 06:16","resolved":"2026-10-30 11:04","target_hours":72,"within_target":true,"cause":"디스크 가득 참","alerts":["AL-0125"],"timeline":[{"time":"2026-10-29 06:16","event":"생성","by":"시스템"},{"time":"2026-10-29 07:01","event":"처리 시작","by":"임채원"},{"time":"2026-10-30 11:04","event":"해결","by":"임채원"},{"time":"2026-11-03 10:04","event":"종료","by":"정주원"}]},{"id":"INC-018","title":"auth-08 CPU 사용률 90% 이상","priority":"P2","state":"종료","server":"SV-028","project":"PRJ-04","assignee":"U11","opened":"2026-10-30 03:18","resolved":"2026-10-30 10:30","target_hours":8,"within_target":true,"cause":"네트워크 장비 점검 영향","alerts":["AL-0137"],"timeline":[{"time":"2026-10-30 03:18","event":"생성","by":"시스템"},{"time":"2026-10-30 03:44","event":"처리 시작","by":"한서연"},{"time":"2026-10-30 10:30","event":"해결","by":"한서연"},{"time":"2026-10-31 18:30","event":"종료","by":"임채원"}]},{"id":"INC-019","title":"dw-03 CPU 사용률 80% 이상","priority":"P2","state":"종료","server":"SV-037","project":"PRJ-06","assignee":"U09","opened":"2026-10-30 11:01","resolved":"2026-10-30 18:13","target_hours":8,"within_target":true,"cause":"메모리 누수","alerts":["AL-0142"],"timeline":[{"time":"2026-10-30 11:01","event":"생성","by":"시스템"},{"time":"2026-10-30 11:08","event":"처리 시작","by":"장민준"},{"time":"2026-10-30 18:13","event":"해결","by":"장민준"},{"time":"2026-10-31 06:13","event":"종료","by":"정주원"}]},{"id":"INC-020","title":"api-03 디스크 사용률 85% 이상","priority":"P4","state":"종료","server":"SV-009","project":"PRJ-02","assignee":"U11","opened":"2026-10-30 21:15","resolved":"2026-11-01 16:27","target_hours":72,"within_target":true,"cause":"배포 후 설정 누락","alerts":["AL-0146"],"timeline":[{"time":"2026-10-30 21:15","event":"생성","by":"시스템"},{"time":"2026-10-30 22:13","event":"처리 시작","by":"한서연"},{"time":"2026-11-01 16:27","event":"해결","by":"한서연"},{"time":"2026-11-02 04:27","event":"종료","by":"임채원"}]},{"id":"INC-021","title":"api-04 CPU 사용률 80% 이상","priority":"P3","state":"종료","server":"SV-010","project":"PRJ-02","assignee":"U06","opened":"2026-10-30 23:49","resolved":"2026-11-01 07:01","target_hours":24,"within_target":false,"cause":"인증서 갱신 누락","alerts":["AL-0148"],"timeline":[{"time":"2026-10-30 23:49","event":"생성","by":"시스템"},{"time":"2026-10-31 00:35","event":"처리 시작","by":"강도윤"},{"time":"2026-11-01 07:01","event":"해결","by":"강도윤"},{"time":"2026-11-02 22:01","event":"종료","by":"김하늘"}]},{"id":"INC-022","title":"ml-02 CPU 사용률 80% 이상","priority":"P3","state":"종료","server":"SV-031","project":"PRJ-05","assignee":"U06","opened":"2026-10-31 23:53","resolved":"2026-11-01 21:29","target_hours":24,"within_target":true,"cause":"디스크 가득 참","alerts":["AL-0163"],"timeline":[{"time":"2026-10-31 23:53","event":"생성","by":"시스템"},{"time":"2026-11-01 00:42","event":"처리 시작","by":"강도윤"},{"time":"2026-11-01 21:29","event":"해결","by":"강도윤"},{"time":"2026-11-03 04:29","event":"종료","by":"정주원"}]},{"id":"INC-023","title":"web-02 CPU 사용률 80% 이상","priority":"P4","state":"종료","server":"SV-002","project":"PRJ-01","assignee":"U07","opened":"2026-11-01 15:49","resolved":"2026-11-02 20:37","target_hours":72,"within_target":true,"cause":"메모리 누수","alerts":["AL-0167"],"timeline":[{"time":"2026-11-01 15:49","event":"생성","by":"시스템"},{"time":"2026-11-01 16:37","event":"처리 시작","by":"조시우"},{"time":"2026-11-02 20:37","event":"해결","by":"조시우"},{"time":"2026-11-03 11:37","event":"종료","by":"조시우"}]},{"id":"INC-024","title":"pay-07 CPU 사용률 90% 이상","priority":"P4","state":"종료","server":"SV-019","project":"PRJ-03","assignee":"U09","opened":"2026-11-03 02:45","resolved":"2026-11-07 00:21","target_hours":72,"within_target":false,"cause":"배치 작업 겹침","alerts":["AL-0181","AL-0182"],"timeline":[{"time":"2026-11-03 02:45","event":"생성","by":"시스템"},{"time":"2026-11-03 03:44","event":"처리 시작","by":"장민준"},{"time":"2026-11-07 00:21","event":"해결","by":"장민준"},{"time":"2026-11-10 08:21","event":"종료","by":"정주원"}]},{"id":"INC-025","title":"bot-05 CPU 사용률 90% 이상","priority":"P2","state":"종료","server":"SV-045","project":"PRJ-07","assignee":"U06","opened":"2026-11-03 11:49","resolved":"2026-11-03 16:37","target_hours":8,"within_target":true,"cause":"네트워크 장비 점검 영향","alerts":["AL-0183"],"timeline":[{"time":"2026-11-03 11:49","event":"생성","by":"시스템"},{"time":"2026-11-03 12:27","event":"처리 시작","by":"강도윤"},{"time":"2026-11-03 16:37","event":"해결","by":"강도윤"},{"time":"2026-11-04 18:37","event":"종료","by":"강도윤"}]},{"id":"INC-026","title":"web-06 메모리 사용률 90% 이상","priority":"P2","state":"종료","server":"SV-006","project":"PRJ-01","assignee":"U03","opened":"2026-11-04 06:44","resolved":"2026-11-04 13:56","target_hours":8,"within_target":true,"cause":"네트워크 장비 점검 영향","alerts":["AL-0187"],"timeline":[{"time":"2026-11-04 06:44","event":"생성","by":"시스템"},{"time":"2026-11-04 07:25","event":"처리 시작","by":"박건우"},{"time":"2026-11-04 13:56","event":"해결","by":"박건우"},{"time":"2026-11-07 16:56","event":"종료","by":"정주원"}]},{"id":"INC-027","title":"web-06 CPU 사용률 80% 이상","priority":"P4","state":"종료","server":"SV-006","project":"PRJ-01","assignee":"U06","opened":"2026-11-04 13:53","resolved":"2026-11-05 04:17","target_hours":72,"within_target":true,"cause":"DB 연결 수 초과","alerts":["AL-0193"],"timeline":[{"time":"2026-11-04 13:53","event":"생성","by":"시스템"},{"time":"2026-11-04 14:20","event":"처리 시작","by":"강도윤"},{"time":"2026-11-05 04:17","event":"해결","by":"강도윤"},{"time":"2026-11-07 23:17","event":"종료","by":"박건우"}]},{"id":"INC-028","title":"web-03 응답 시간 3초 이상","priority":"P4","state":"종료","server":"SV-003","project":"PRJ-01","assignee":"U01","opened":"2026-11-04 21:09","resolved":"2026-11-06 16:21","target_hours":72,"within_target":true,"cause":"트래픽 급증","alerts":["AL-0195"],"timeline":[{"time":"2026-11-04 21:09","event":"생성","by":"시스템"},{"time":"2026-11-04 21:22","event":"처리 시작","by":"김하늘"},{"time":"2026-11-06 16:21","event":"해결","by":"김하늘"},{"time":"2026-11-09 01:21","event":"종료","by":"임채원"}]},{"id":"INC-029","title":"api-03 응답 시간 3초 이상","priority":"P4","state":"종료","server":"SV-009","project":"PRJ-02","assignee":"U03","opened":"2026-11-05 05:51","resolved":"2026-11-07 01:03","target_hours":72,"within_target":true,"cause":"디스크 가득 참","alerts":["AL-0198"],"timeline":[{"time":"2026-11-05 05:51","event":"생성","by":"시스템"},{"time":"2026-11-05 06:23","event":"처리 시작","by":"박건우"},{"time":"2026-11-07 01:03","event":"해결","by":"박건우"},{"time":"2026-11-08 08:03","event":"종료","by":"김하늘"}]},{"id":"INC-030","title":"bot-06 디스크 사용률 85% 이상","priority":"P3","state":"종료","server":"SV-046","project":"PRJ-07","assignee":"U09","opened":"2026-11-06 02:59","resolved":"2026-11-06 17:23","target_hours":24,"within_target":true,"cause":"외부 결제사 지연","alerts":["AL-0209"],"timeline":[{"time":"2026-11-06 02:59","event":"생성","by":"시스템"},{"time":"2026-11-06 03:54","event":"처리 시작","by":"장민준"},{"time":"2026-11-06 17:23","event":"해결","by":"장민준"},{"time":"2026-11-08 16:23","event":"종료","by":"임채원"}]},{"id":"INC-031","title":"auth-09 CPU 사용률 80% 이상","priority":"P3","state":"종료","server":"SV-029","project":"PRJ-04","assignee":"U10","opened":"2026-11-06 06:46","resolved":"2026-11-06 11:34","target_hours":24,"within_target":true,"cause":"트래픽 급증","alerts":["AL-0213"],"timeline":[{"time":"2026-11-06 06:46","event":"생성","by":"시스템"},{"time":"2026-11-06 06:57","event":"처리 시작","by":"임채원"},{"time":"2026-11-06 11:34","event":"해결","by":"임채원"},{"time":"2026-11-08 16:34","event":"종료","by":"장민준"}]},{"id":"INC-032","title":"auth-08 CPU 사용률 90% 이상","priority":"P4","state":"종료","server":"SV-028","project":"PRJ-04","assignee":"U11","opened":"2026-11-09 07:12","resolved":"2026-11-12 00:00","target_hours":72,"within_target":true,"cause":"메모리 누수","alerts":["AL-0236"],"timeline":[{"time":"2026-11-09 07:12","event":"생성","by":"시스템"},{"time":"2026-11-09 07:41","event":"처리 시작","by":"한서연"},{"time":"2026-11-12 00:00","event":"해결","by":"한서연"},{"time":"2026-11-13 17:00","event":"종료","by":"정주원"}]},{"id":"INC-033","title":"bot-06 CPU 사용률 90% 이상","priority":"P2","state":"종료","server":"SV-046","project":"PRJ-07","assignee":"U07","opened":"2026-11-09 09:23","resolved":"2026-11-09 10:59","target_hours":8,"within_target":true,"cause":"인증서 갱신 누락","alerts":["AL-0238"],"timeline":[{"time":"2026-11-09 09:23","event":"생성","by":"시스템"},{"time":"2026-11-09 10:18","event":"처리 시작","by":"조시우"},{"time":"2026-11-09 10:59","event":"해결","by":"조시우"},{"time":"2026-11-09 23:59","event":"종료","by":"이예린"}]},{"id":"INC-034","title":"infra-05 디스크 사용률 85% 이상","priority":"P2","state":"해결","server":"SV-053","project":"PRJ-08","assignee":"U01","opened":"2026-11-09 20:26","resolved":"2026-11-09 23:38","target_hours":8,"within_target":true,"cause":"인증서 갱신 누락","alerts":["AL-0242"],"timeline":[{"time":"2026-11-09 20:26","event":"생성","by":"시스템"},{"time":"2026-11-09 20:46","event":"처리 시작","by":"김하늘"},{"time":"2026-11-09 23:38","event":"해결","by":"김하늘"}]},{"id":"INC-035","title":"auth-05 CPU 사용률 80% 이상","priority":"P3","state":"해결","server":"SV-025","project":"PRJ-04","assignee":"U02","opened":"2026-11-09 20:36","resolved":"2026-11-10 11:00","target_hours":24,"within_target":true,"cause":"네트워크 장비 점검 영향","alerts":["AL-0243"],"timeline":[{"time":"2026-11-09 20:36","event":"생성","by":"시스템"},{"time":"2026-11-09 20:47","event":"처리 시작","by":"이예린"},{"time":"2026-11-10 11:00","event":"해결","by":"이예린"}]},{"id":"INC-036","title":"web-06 응답 시간 3초 이상","priority":"P4","state":"해결","server":"SV-006","project":"PRJ-01","assignee":"U05","opened":"2026-11-11 05:32","resolved":"2026-11-12 10:20","target_hours":72,"within_target":true,"cause":"네트워크 장비 점검 영향","alerts":["AL-0255"],"timeline":[{"time":"2026-11-11 05:32","event":"생성","by":"시스템"},{"time":"2026-11-11 05:41","event":"처리 시작","by":"정주원"},{"time":"2026-11-12 10:20","event":"해결","by":"정주원"}]},{"id":"INC-037","title":"web-01 CPU 사용률 90% 이상","priority":"P2","state":"처리 중","server":"SV-001","project":"PRJ-01","assignee":"U06","opened":"2026-11-13 20:23","resolved":null,"target_hours":8,"within_target":null,"cause":null,"alerts":["AL-0284"],"timeline":[{"time":"2026-11-13 20:23","event":"생성","by":"시스템"},{"time":"2026-11-13 20:40","event":"처리 시작","by":"강도윤"}]},{"id":"INC-038","title":"pay-06 디스크 사용률 85% 이상","priority":"P3","state":"처리 중","server":"SV-018","project":"PRJ-03","assignee":"U05","opened":"2026-11-14 23:57","resolved":null,"target_hours":24,"within_target":null,"cause":null,"alerts":["AL-0304"],"timeline":[{"time":"2026-11-14 23:57","event":"생성","by":"시스템"},{"time":"2026-11-15 00:14","event":"처리 시작","by":"정주원"}]},{"id":"INC-039","title":"pay-06 응답 시간 3초 이상","priority":"P2","state":"처리 중","server":"SV-018","project":"PRJ-03","assignee":"U05","opened":"2026-11-15 18:42","resolved":null,"target_hours":8,"within_target":null,"cause":null,"alerts":["AL-0310"],"timeline":[{"time":"2026-11-15 18:42","event":"생성","by":"시스템"},{"time":"2026-11-15 19:28","event":"처리 시작","by":"정주원"}]},{"id":"INC-040","title":"api-05 헬스 체크 실패","priority":"P4","state":"처리 중","server":"SV-011","project":"PRJ-02","assignee":"U07","opened":"2026-11-15 19:21","resolved":null,"target_hours":72,"within_target":null,"cause":null,"alerts":["AL-0311"],"timeline":[{"time":"2026-11-15 19:21","event":"생성","by":"시스템"},{"time":"2026-11-15 20:07","event":"처리 시작","by":"조시우"}]},{"id":"INC-041","title":"pay-04 CPU 사용률 80% 이상","priority":"P4","state":"신규","server":"SV-016","project":"PRJ-03","assignee":null,"opened":"2026-11-16 08:35","resolved":null,"target_hours":72,"within_target":null,"cause":null,"alerts":["AL-0315"],"timeline":[{"time":"2026-11-16 08:35","event":"생성","by":"시스템"}]},{"id":"INC-042","title":"ml-01 디스크 사용률 85% 이상","priority":"P2","state":"신규","server":"SV-030","project":"PRJ-05","assignee":null,"opened":"2026-11-16 08:52","resolved":null,"target_hours":8,"within_target":null,"cause":null,"alerts":["AL-0316"],"timeline":[{"time":"2026-11-16 08:52","event":"생성","by":"시스템"}]}],"servers":[{"id":"SV-001","name":"web-01","cloud":"사내 서버"},{"id":"SV-002","name":"web-02","cloud":"Azure"},{"id":"SV-003","name":"web-03","cloud":"Azure"},{"id":"SV-004","name":"web-04","cloud":"사내 서버"},{"id":"SV-005","name":"web-05","cloud":"AWS"},{"id":"SV-006","name":"web-06","cloud":"AWS"},{"id":"SV-007","name":"api-01","cloud":"AWS"},{"id":"SV-008","name":"api-02","cloud":"AWS"},{"id":"SV-009","name":"api-03","cloud":"Azure"},{"id":"SV-010","name":"api-04","cloud":"AWS"},{"id":"SV-011","name":"api-05","cloud":"Azure"},{"id":"SV-012","name":"api-06","cloud":"Azure"},{"id":"SV-013","name":"pay-01","cloud":"Azure"},{"id":"SV-014","name":"pay-02","cloud":"AWS"},{"id":"SV-015","name":"pay-03","cloud":"사내 서버"},{"id":"SV-016","name":"pay-04","cloud":"AWS"},{"id":"SV-017","name":"pay-05","cloud":"AWS"},{"id":"SV-018","name":"pay-06","cloud":"Azure"},{"id":"SV-019","name":"pay-07","cloud":"Azure"},{"id":"SV-020","name":"pay-08","cloud":"사내 서버"},{"id":"SV-021","name":"auth-01","cloud":"Azure"},{"id":"SV-022","name":"auth-02","cloud":"Azure"},{"id":"SV-023","name":"auth-03","cloud":"AWS"},{"id":"SV-024","name":"auth-04","cloud":"AWS"},{"id":"SV-025","name":"auth-05","cloud":"Azure"},{"id":"SV-026","name":"auth-06","cloud":"사내 서버"},{"id":"SV-027","name":"auth-07","cloud":"AWS"},{"id":"SV-028","name":"auth-08","cloud":"사내 서버"},{"id":"SV-029","name":"auth-09","cloud":"사내 서버"},{"id":"SV-030","name":"ml-01","cloud":"AWS"},{"id":"SV-031","name":"ml-02","cloud":"AWS"},{"id":"SV-032","name":"ml-03","cloud":"AWS"},{"id":"SV-033","name":"ml-04","cloud":"AWS"},{"id":"SV-034","name":"ml-05","cloud":"AWS"},{"id":"SV-035","name":"dw-01","cloud":"AWS"},{"id":"SV-036","name":"dw-02","cloud":"AWS"},{"id":"SV-037","name":"dw-03","cloud":"AWS"},{"id":"SV-038","name":"dw-04","cloud":"AWS"},{"id":"SV-039","name":"dw-05","cloud":"AWS"},{"id":"SV-040","name":"dw-06","cloud":"사내 서버"},{"id":"SV-041","name":"bot-01","cloud":"AWS"},{"id":"SV-042","name":"bot-02","cloud":"AWS"},{"id":"SV-043","name":"bot-03","cloud":"AWS"},{"id":"SV-044","name":"bot-04","cloud":"AWS"},{"id":"SV-045","name":"bot-05","cloud":"AWS"},{"id":"SV-046","name":"bot-06","cloud":"Azure"},{"id":"SV-047","name":"bot-07","cloud":"Azure"},{"id":"SV-048","name":"bot-08","cloud":"Azure"},{"id":"SV-049","name":"infra-01","cloud":"AWS"},{"id":"SV-050","name":"infra-02","cloud":"AWS"},{"id":"SV-051","name":"infra-03","cloud":"AWS"},{"id":"SV-052","name":"infra-04","cloud":"AWS"},{"id":"SV-053","name":"infra-05","cloud":"AWS"},{"id":"SV-054","name":"infra-06","cloud":"사내 서버"},{"id":"SV-055","name":"infra-07","cloud":"AWS"},{"id":"SV-056","name":"infra-08","cloud":"AWS"},{"id":"SV-057","name":"infra-09","cloud":"Azure"},{"id":"SV-058","name":"infra-10","cloud":"AWS"}]};
+const NOW = new Date(DATA.now.replace(' ', 'T'));
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = n => Number(n).toLocaleString('ko-KR');
+const user = id => (DATA.users.find(u => u.id === id) || {}).name || '—';
+const won = n => fmt(Math.round(n / 10000)) + '만 원';
+function app(menu, crumb, body) {
+  const groups = [['운영', ['인시던트', '알림']], ['인프라', ['서버', '네트워크']], ['비용', ['월별 비용', '예산']]];
+  return `<div class="app"><nav class="nav"><div class="logo"><i></i>가나다 운영 콘솔</div>${groups.map(([g, ms]) =>
+    `<div class="grp">${g}</div>` + ms.map(m => `<a class="${m === menu ? 'on' : ''}">${m}</a>`).join('')).join('')}</nav>
+  <div class="main"><div class="top"><span class="crumb">${crumb}</span><span class="sp"></span><span class="who"><i>김</i>김하늘 · 관리자</span></div>
+  <div class="page">${body}</div></div></div>`;
+}
+let SCR = 0, HI = null;
+function render() {
+  const s = SCREENS[SCR];
+  $('#scrs').innerHTML = SCREENS.map((x, i) => `<button class="${i === SCR ? 'on' : ''}" onclick="SCR=${i};HI=null;render()">${esc(x.name)}</button>`).join('');
+  $('#frame').innerHTML = s.html();
+  s.bind && s.bind();
+  $('#desc').innerHTML = `<h2>${esc(s.name)}</h2><div class="ids">${esc(s.id)}</div><p class="purpose">${esc(s.purpose)}</p>`
+    + s.spots.map((p, i) => `<div class="spot ${HI === i + 1 ? 'hi' : ''}" onmouseenter="hi(${i + 1})" onmouseleave="hi(null)"><h3><span class="mk">${i + 1}</span>${esc(p[0])}</h3><ul>${p[1].map(l => `<li>${esc(l)}</li>`).join('')}</ul>${p[2] ? `<div class="ids">${esc(p[2])}</div>` : ''}</div>`).join('')
+    + `<label class="opt"><input type="checkbox" ${$('#sb').classList.contains('nomk') ? '' : 'checked'} onchange="$('#sb').classList.toggle('nomk',!this.checked)"> 자리 번호 보기</label>`;
+  marks();
+}
+function marks() {
+  const f = $('#frame'), fr = f.getBoundingClientRect();
+  f.querySelectorAll('.mk').forEach(m => m.remove());
+  f.querySelectorAll('[data-spot]').forEach(el => {
+    const r = el.getBoundingClientRect(), m = document.createElement('span');
+    m.className = 'mk'; m.textContent = el.dataset.spot;
+    m.style.left = (r.left - fr.left - 8) + 'px'; m.style.top = (r.top - fr.top - 8) + 'px';
+    m.onmouseenter = () => hi(+el.dataset.spot); m.onmouseleave = () => hi(null);
+    f.appendChild(m);
+  });
+}
+function hi(n) {
+  HI = n;
+  document.querySelectorAll('[data-spot]').forEach(el => el.classList.toggle('spot-hi', +el.dataset.spot === n));
+  document.querySelectorAll('.sb-desc .spot').forEach((el, i) => el.classList.toggle('hi', i + 1 === n));
+}
+window.addEventListener('resize', marks);
+// 인시던트 처리 큐 · 화면 2개: 처리 큐(목록 + 상세 패널), 처리 현황 통계
+const ST = {'신규': 'info', '처리 중': 'warn', '해결': 'ok', '종료': 'mute'};
+const srv = id => DATA.servers.find(s => s.id === id) || {};
+const hrs = (a, b) => (b - a) / 36e5;
+const dt = s => new Date(s.replace(' ', 'T'));
+function elapsed(x) {
+  const end = x.resolved ? dt(x.resolved) : NOW, h = hrs(dt(x.opened), end), r = h / x.target_hours;
+  const cls = r > 1 ? 'bad' : r > 0.75 ? 'warn' : '';
+  const t = h < 1 ? Math.round(h * 60) + '분' : h < 48 ? h.toFixed(1) + '시간' : Math.round(h / 24) + '일';
+  return {h, r, html: `<div class="elapsed"><div class="bar"><i class="${cls}" style="width:${Math.min(100, r * 100)}%"></i></div><span>${t} / ${x.target_hours}시간</span></div>`};
+}
+let Q = {view: '처리 대기', sel: null};
+const VIEWS = {'처리 대기': x => x.state === '신규' || x.state === '처리 중', '해결': x => x.state === '해결', '전체': () => true};
+function queue() {
+  const list = DATA.incidents.filter(VIEWS[Q.view]).sort((a, b) => b.opened.localeCompare(a.opened));
+  if (Q.sel === null || !list.find(x => x.id === Q.sel)) Q.sel = list[0] && list[0].id;
+  const open = DATA.incidents.filter(VIEWS['처리 대기']);
+  const risk = open.filter(x => elapsed(x).r > 0.75).length;
+  const month = DATA.incidents.filter(x => x.resolved && x.resolved >= '2026-11-01');
+  const inT = month.filter(x => x.within_target).length;
+  const cnt = k => DATA.incidents.filter(VIEWS[k]).length;
+  const x = DATA.incidents.find(i => i.id === Q.sel);
+  return app('인시던트', '운영 › <b>인시던트</b>', `
+  <div class="phead"><div><h1>인시던트</h1><p>알림이 묶여 생긴 인시던트를 담당자에게 배정하고 해결 목표 시간 안에 처리합니다.</p></div><span class="sp"></span><button class="btn pri" data-spot="1">인시던트 등록</button></div>
+  <div class="kpis" data-spot="2">
+    <div class="card kpi"><div class="k">신규</div><div class="v">${open.filter(i => i.state === '신규').length}<small>건</small></div><div class="s">담당자 없음</div></div>
+    <div class="card kpi"><div class="k">처리 중</div><div class="v">${open.filter(i => i.state === '처리 중').length}<small>건</small></div><div class="s">담당자 배정됨</div></div>
+    <div class="card kpi ${risk ? 'warn' : ''}"><div class="k">목표 임박 · 초과</div><div class="v">${risk}<small>건</small></div><div class="s">목표 시간의 75% 이상 지남</div></div>
+    <div class="card kpi"><div class="k">11월 목표 내 해결</div><div class="v">${month.length ? Math.round(inT / month.length * 100) : 0}<small>%</small></div><div class="s">${month.length}건 가운데 ${inT}건</div></div>
+  </div>
+  <div class="split">
+    <div class="card">
+      <div class="hd"><div class="seg" data-spot="3">${Object.keys(VIEWS).map(k => `<button class="${k === Q.view ? 'on' : ''}" data-view="${k}">${k}<em>${cnt(k)}</em></button>`).join('')}</div><span class="sp"></span>
+        <div class="fbar" data-spot="4"><select class="sel"><option>우선순위 전체</option></select><select class="sel"><option>담당 전체</option></select><input class="search" placeholder="제목 · 서버 이름 찾기"></div></div>
+      <div class="bd" style="padding:10px 0 0"><div class="tblwrap"><table class="tbl" data-spot="5"><thead><tr><th>ID</th><th>제목</th><th>우선순위</th><th>상태</th><th>담당</th><th>경과 / 목표</th></tr></thead><tbody>
+      ${list.length ? list.map(i => `<tr class="row ${i.id === Q.sel ? 'sel' : ''}" data-id="${i.id}"><td class="mono">${i.id}</td><td><div class="ttl">${esc(i.title)}</div><div class="sub">${esc(i.opened)} 생성 · 알림 ${i.alerts.length}건</div></td><td><span class="prio ${i.priority}">${i.priority}</span></td><td><span class="bdg ${ST[i.state]}">${i.state}</span></td><td>${i.assignee ? user(i.assignee) : '<span class="muted">미배정</span>'}</td><td>${elapsed(i).html}</td></tr>`).join('')
+        : '<tr><td colspan="6" class="empty">처리할 인시던트가 없습니다.</td></tr>'}
+      </tbody></table></div><div class="pager">${list.length}건</div></div>
+    </div>
+    ${x ? `<div class="card panel" data-spot="6"><div class="hd"><span class="mono muted">${x.id}</span><span class="bdg ${ST[x.state]}">${x.state}</span><span class="sp"></span>${x.state === '신규' ? '<button class="btn sm pri">담당 맡기</button>' : x.state === '처리 중' ? '<button class="btn sm pri">해결</button>' : x.state === '해결' ? '<button class="btn sm">종료</button>' : ''}</div>
+      <div class="bd"><h2 style="font-size:16px;margin-bottom:12px">${esc(x.title)}</h2>
+      <dl class="kv"><dt>우선순위</dt><dd><span class="prio ${x.priority}">${x.priority}</span> 목표 ${x.target_hours}시간</dd><dt>서버</dt><dd>${esc(srv(x.server).name)} · ${esc(srv(x.server).cloud)}</dd><dt>담당</dt><dd>${x.assignee ? user(x.assignee) : '미배정'}</dd><dt>경과</dt><dd>${elapsed(x).html}</dd><dt>원인</dt><dd>${esc(x.cause || '—')}</dd><dt>묶인 알림</dt><dd class="mono">${x.alerts.join(', ')}</dd></dl>
+      <h3 style="font-size:13px;margin:16px 0 8px" data-spot="7">처리 이력</h3><ul class="tl">${x.timeline.slice().reverse().map(t => `<li><b>${esc(t.event)}</b> · ${esc(t.by)}<span>${esc(t.time)}</span></li>`).join('')}</ul></div></div>` : ''}
+  </div>`);
+}
+function stats() {
+  const days = [...Array(30)].map((_, i) => { const d = new Date(NOW); d.setDate(d.getDate() - 29 + i); return d.toISOString().slice(0, 10); });
+  const by = days.map(d => DATA.incidents.filter(x => x.opened.slice(0, 10) === d));
+  const mx = Math.max(...by.map(b => b.length), 1), W = 1100, H = 180, bw = W / 30;
+  const bars = by.map((b, i) => ['P1', 'P2', 'P3', 'P4'].reduce((acc, p) => {
+    const n = b.filter(x => x.priority === p).length, h = n / mx * (H - 20);
+    acc.s += n ? `<rect x="${i * bw + 4}" y="${H - acc.y - h}" width="${bw - 8}" height="${h}" fill="var(--${p.toLowerCase()})" rx="2"/>` : ''; acc.y += h; return acc;
+  }, {s: '', y: 0}).s).join('');
+  const lbl = days.map((d, i) => i % 5 === 0 ? `<text x="${i * bw + bw / 2}" y="${H + 14}" font-size="11" text-anchor="middle" fill="var(--ink-3)">${d.slice(5)}</text>` : '').join('');
+  const done = DATA.incidents.filter(x => x.resolved);
+  const rows = ['P1', 'P2', 'P3', 'P4'].map(p => { const a = done.filter(x => x.priority === p), ok = a.filter(x => x.within_target).length;
+    const avg = a.length ? a.reduce((s, x) => s + hrs(dt(x.opened), dt(x.resolved)), 0) / a.length : 0;
+    return `<tr><td><span class="prio ${p}">${p}</span></td><td class="r num">${a.length}</td><td class="r num">${avg.toFixed(1)}시간</td><td class="r num">${a.length ? Math.round(ok / a.length * 100) : 0}%</td><td><span class="meter"><i class="${ok / (a.length || 1) < .7 ? 'warn' : ''}" style="width:${a.length ? ok / a.length * 100 : 0}%"></i></span></td></tr>`; }).join('');
+  const causes = {}; done.forEach(x => causes[x.cause] = (causes[x.cause] || 0) + 1);
+  const top = Object.entries(causes).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  return app('인시던트', '운영 › 인시던트 › <b>처리 현황</b>', `
+  <div class="phead"><div><h1>처리 현황</h1><p>최근 30일 동안 생긴 인시던트와 해결 목표 시간을 지킨 비율입니다.</p></div><span class="sp"></span><div class="seg" data-spot="1"><button>7일</button><button class="on">30일</button><button>90일</button></div></div>
+  <div class="card" data-spot="2"><div class="hd"><h2>날짜별 생성 건수</h2><span class="sp"></span><div class="legend">${['P1', 'P2', 'P3', 'P4'].map(p => `<span><i style="background:var(--${p.toLowerCase()})"></i>${p}</span>`).join('')}</div></div>
+    <div class="bd"><svg class="chart" viewBox="0 0 ${W} ${H + 20}">${bars}${lbl}<line x1="0" x2="${W}" y1="${H}" y2="${H}" stroke="var(--line)"/></svg></div></div>
+  <div class="split" style="grid-template-columns:1fr 1fr">
+    <div class="card" data-spot="3"><div class="hd"><h2>우선순위별 해결</h2></div><div class="bd" style="padding:10px 0 0"><table class="tbl"><thead><tr><th>우선순위</th><th class="r">해결</th><th class="r">평균 해결 시간</th><th class="r">목표 내</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>
+    <div class="card" data-spot="4"><div class="hd"><h2>원인 상위 5개</h2></div><div class="bd">${top.map(([c, n]) => `<div style="display:flex;align-items:center;gap:10px;padding:6px 0"><span style="flex:1">${esc(c)}</span><span class="meter" style="width:140px"><i style="width:${n / top[0][1] * 100}%"></i></span><span class="num" style="width:36px;text-align:right">${n}건</span></div>`).join('')}</div></div>
+  </div>`);
+}
+const SCREENS = [
+  {name: '처리 큐', id: 'OP-INC-LST-R', purpose: '처리할 인시던트를 우선순위와 경과 시간 순으로 보고, 담당을 맡거나 해결로 넘긴다.', html: queue,
+   bind() { document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { Q.view = b.dataset.view; Q.sel = null; render(); });
+            document.querySelectorAll('tr.row').forEach(r => r.onclick = () => { Q.sel = r.dataset.id; render(); }); },
+   spots: [
+    ['인시던트 등록', ['알림 없이 직접 인시던트를 만듭니다.', '관리자 · 운영자에게만 보입니다.'], 'INC-FN-REG-01'],
+    ['숫자 칸', ['신규 · 처리 중은 지금 건수입니다.', '목표 임박 · 초과: 경과 시간이 목표 시간의 75% 이상인 처리 대기 건입니다.', '목표 내 해결: 이번 달 해결된 건 가운데 목표 시간 안에 해결된 비율입니다.'], 'INC-PL-SLA-01'],
+    ['빠른 보기', ['처리 대기: 신규 · 처리 중', '해결: 해결했으나 종료 전', '전체: 모든 상태', '처음 열면 처리 대기입니다.'], 'INC-FN-LST-01'],
+    ['필터 · 찾기', ['우선순위 · 담당으로 거릅니다.', '제목과 서버 이름 일부로 찾습니다.'], 'INC-FN-LST-02'],
+    ['목록', ['최근 생성 순으로 정렬합니다.', '경과 / 목표: 생성부터 지금(해결 건은 해결 시각)까지 시간을 목표 시간과 견줍니다.', '막대 색: 75% 미만 초록 · 75% 이상 주황 · 100% 초과 빨강', '행을 누르면 오른쪽 패널에 상세가 열립니다.'], 'INC-PL-STT-01'],
+    ['상세 패널', ['상태에 따라 버튼 하나만 보입니다.', '신규: 담당 맡기 · 처리 중: 해결 · 해결: 종료', '종료 건은 버튼이 없습니다.'], 'INC-PL-STS-01'],
+    ['처리 이력', ['최근 순으로 보입니다.', '생성은 시스템, 나머지는 행동한 사람 이름을 적습니다.'], 'INC-FN-STA-03'],
+   ]},
+  {name: '처리 현황', id: 'OP-INC-DSH-R', purpose: '기간 안에 생긴 인시던트 수와 목표 시간 준수율을 우선순위별로 본다.', html: stats,
+   spots: [
+    ['기간', ['7일 · 30일 · 90일 가운데 고릅니다.', '처음 열면 30일입니다.'], 'INC-FN-LST-05'],
+    ['날짜별 생성 건수', ['막대 하나가 하루입니다.', '우선순위별로 쌓습니다.'], 'INC-PL-STT-01'],
+    ['우선순위별 해결', ['해결 · 종료된 건만 셉니다.', '평균 해결 시간: 생성부터 해결까지', '목표 내 비율이 70% 미만이면 막대를 주황으로 표시합니다.'], 'INC-PL-SLA-01'],
+    ['원인 상위 5개', ['해결할 때 고른 원인을 셉니다.'], 'INC-FN-STA-04'],
+   ]},
+];
+
+render();
+</script>
+</body>
+</html>

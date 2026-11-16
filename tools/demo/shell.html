@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>__TITLE__ 화면 설계서</title>
+<style>__CSS__</style>
+</head>
+<body>
+<div class="sb" id="sb">
+  <div class="sb-top">
+    <h1>__TITLE__</h1><span class="code">__CODE__</span>
+    <div class="sb-scr" id="scrs"></div>
+    <span class="sp"></span>
+    <span class="sample">예시 데이터</span>
+  </div>
+  <div class="sb-body">
+    <div class="sb-canvas"><div class="sb-frame" id="frame"></div></div>
+    <aside class="sb-desc" id="desc"></aside>
+  </div>
+</div>
+<script>
+const DATA = __DATA__;
+const NOW = new Date(DATA.now.replace(' ', 'T'));
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = n => Number(n).toLocaleString('ko-KR');
+const user = id => (DATA.users.find(u => u.id === id) || {}).name || '—';
+const won = n => fmt(Math.round(n / 10000)) + '만 원';
+function app(menu, crumb, body) {
+  const groups = [['운영', ['인시던트', '알림']], ['인프라', ['서버', '네트워크']], ['비용', ['월별 비용', '예산']]];
+  return `<div class="app"><nav class="nav"><div class="logo"><i></i>가나다 운영 콘솔</div>${groups.map(([g, ms]) =>
+    `<div class="grp">${g}</div>` + ms.map(m => `<a class="${m === menu ? 'on' : ''}">${m}</a>`).join('')).join('')}</nav>
+  <div class="main"><div class="top"><span class="crumb">${crumb}</span><span class="sp"></span><span class="who"><i>김</i>김하늘 · 관리자</span></div>
+  <div class="page">${body}</div></div></div>`;
+}
+let SCR = 0, HI = null;
+function render() {
+  const s = SCREENS[SCR];
+  $('#scrs').innerHTML = SCREENS.map((x, i) => `<button class="${i === SCR ? 'on' : ''}" onclick="SCR=${i};HI=null;render()">${esc(x.name)}</button>`).join('');
+  $('#frame').innerHTML = s.html();
+  s.bind && s.bind();
+  $('#desc').innerHTML = `<h2>${esc(s.name)}</h2><div class="ids">${esc(s.id)}</div><p class="purpose">${esc(s.purpose)}</p>`
+    + s.spots.map((p, i) => `<div class="spot ${HI === i + 1 ? 'hi' : ''}" onmouseenter="hi(${i + 1})" onmouseleave="hi(null)"><h3><span class="mk">${i + 1}</span>${esc(p[0])}</h3><ul>${p[1].map(l => `<li>${esc(l)}</li>`).join('')}</ul>${p[2] ? `<div class="ids">${esc(p[2])}</div>` : ''}</div>`).join('')
+    + `<label class="opt"><input type="checkbox" ${$('#sb').classList.contains('nomk') ? '' : 'checked'} onchange="$('#sb').classList.toggle('nomk',!this.checked)"> 자리 번호 보기</label>`;
+  marks();
+}
+function marks() {
+  const f = $('#frame'), fr = f.getBoundingClientRect();
+  f.querySelectorAll('.mk').forEach(m => m.remove());
+  f.querySelectorAll('[data-spot]').forEach(el => {
+    const r = el.getBoundingClientRect(), m = document.createElement('span');
+    m.className = 'mk'; m.textContent = el.dataset.spot;
+    m.style.left = (r.left - fr.left - 8) + 'px'; m.style.top = (r.top - fr.top - 8) + 'px';
+    m.onmouseenter = () => hi(+el.dataset.spot); m.onmouseleave = () => hi(null);
+    f.appendChild(m);
+  });
+}
+function hi(n) {
+  HI = n;
+  document.querySelectorAll('[data-spot]').forEach(el => el.classList.toggle('spot-hi', +el.dataset.spot === n));
+  document.querySelectorAll('.sb-desc .spot').forEach((el, i) => el.classList.toggle('hi', i + 1 === n));
+}
+window.addEventListener('resize', marks);
+__SCRIPT__
+render();
+</script>
+</body>
+</html>

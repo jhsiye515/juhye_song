@@ -1,0 +1,59 @@
+﻿id,name,project,cloud,region,ip,vcpu,memory_gb,os,status,created
+SV-001,web-01,PRJ-01,사내 서버,본사 IDC,203.0.113.10,8,32,Rocky Linux 9,실행 중,2025-04-19
+SV-002,web-02,PRJ-01,Azure,koreacentral,198.51.100.10,8,16,Ubuntu 24.04,실행 중,2026-09-11
+SV-003,web-03,PRJ-01,Azure,koreacentral,198.51.100.11,8,16,Rocky Linux 9,실행 중,2025-04-21
+SV-004,web-04,PRJ-01,사내 서버,본사 IDC,203.0.113.11,8,16,Rocky Linux 9,실행 중,2025-02-23
+SV-005,web-05,PRJ-01,AWS,ap-northeast-2,192.0.2.10,16,64,Ubuntu 24.04,실행 중,2025-02-08
+SV-006,web-06,PRJ-01,AWS,ap-northeast-2,192.0.2.11,4,16,Windows Server 2022,실행 중,2026-02-20
+SV-007,api-01,PRJ-02,AWS,ap-northeast-2,192.0.2.12,8,16,Ubuntu 24.04,실행 중,2025-08-08
+SV-008,api-02,PRJ-02,AWS,ap-northeast-2,192.0.2.13,2,8,Ubuntu 24.04,실행 중,2026-01-05
+SV-009,api-03,PRJ-02,Azure,koreacentral,198.51.100.12,8,16,Windows Server 2022,실행 중,2026-05-23
+SV-010,api-04,PRJ-02,AWS,ap-northeast-2,192.0.2.14,2,4,Ubuntu 24.04,실행 중,2025-04-27
+SV-011,api-05,PRJ-02,Azure,koreacentral,198.51.100.13,4,16,Ubuntu 24.04,실행 중,2024-12-13
+SV-012,api-06,PRJ-02,Azure,koreacentral,198.51.100.14,4,8,Ubuntu 24.04,실행 중,2025-08-15
+SV-013,pay-01,PRJ-03,Azure,koreacentral,198.51.100.15,4,16,Ubuntu 22.04,실행 중,2025-11-11
+SV-014,pay-02,PRJ-03,AWS,ap-northeast-2,192.0.2.15,8,32,Ubuntu 24.04,오류,2025-05-04
+SV-015,pay-03,PRJ-03,사내 서버,본사 IDC,203.0.113.12,2,4,Windows Server 2022,실행 중,2026-01-24
+SV-016,pay-04,PRJ-03,AWS,ap-northeast-2,192.0.2.16,2,4,Ubuntu 24.04,실행 중,2025-10-31
+SV-017,pay-05,PRJ-03,AWS,ap-northeast-2,192.0.2.17,8,32,Ubuntu 22.04,실행 중,2025-08-07
+SV-018,pay-06,PRJ-03,Azure,koreacentral,198.51.100.16,4,16,Ubuntu 22.04,실행 중,2026-09-08
+SV-019,pay-07,PRJ-03,Azure,koreacentral,198.51.100.17,4,8,Ubuntu 22.04,실행 중,2026-07-05
+SV-020,pay-08,PRJ-03,사내 서버,본사 IDC,203.0.113.13,2,4,Windows Server 2022,실행 중,2026-06-28
+SV-021,auth-01,PRJ-04,Azure,koreacentral,198.51.100.18,8,16,Windows Server 2022,실행 중,2024-11-18
+SV-022,auth-02,PRJ-04,Azure,koreacentral,198.51.100.19,4,16,Rocky Linux 9,실행 중,2026-07-09
+SV-023,auth-03,PRJ-04,AWS,ap-northeast-2,192.0.2.18,2,4,Rocky Linux 9,중지,2024-12-28
+SV-024,auth-04,PRJ-04,AWS,ap-northeast-2,192.0.2.19,16,64,Windows Server 2022,실행 중,2026-01-30
+SV-025,auth-05,PRJ-04,Azure,koreacentral,198.51.100.20,2,8,Ubuntu 24.04,실행 중,2025-05-02
+SV-026,auth-06,PRJ-04,사내 서버,본사 IDC,203.0.113.14,2,8,Ubuntu 22.04,실행 중,2025-04-01
+SV-027,auth-07,PRJ-04,AWS,ap-northeast-2,192.0.2.20,8,16,Windows Server 2022,실행 중,2026-05-31
+SV-028,auth-08,PRJ-04,사내 서버,본사 IDC,203.0.113.15,4,16,Rocky Linux 9,실행 중,2026-09-10
+SV-029,auth-09,PRJ-04,사내 서버,본사 IDC,203.0.113.16,8,32,Ubuntu 24.04,실행 중,2025-11-15
+SV-030,ml-01,PRJ-05,AWS,ap-northeast-2,192.0.2.21,16,64,Windows Server 2022,실행 중,2025-04-10
+SV-031,ml-02,PRJ-05,AWS,ap-northeast-2,192.0.2.22,2,4,Windows Server 2022,실행 중,2025-08-15
+SV-032,ml-03,PRJ-05,AWS,ap-northeast-2,192.0.2.23,2,8,Windows Server 2022,실행 중,2025-01-27
+SV-033,ml-04,PRJ-05,AWS,ap-northeast-2,192.0.2.24,2,8,Windows Server 2022,실행 중,2025-08-09
+SV-034,ml-05,PRJ-05,AWS,ap-northeast-2,192.0.2.25,2,8,Rocky Linux 9,실행 중,2025-10-26
+SV-035,dw-01,PRJ-06,AWS,ap-northeast-2,192.0.2.26,4,16,Rocky Linux 9,실행 중,2026-01-29
+SV-036,dw-02,PRJ-06,AWS,ap-northeast-2,192.0.2.27,4,8,Ubuntu 24.04,실행 중,2025-03-19
+SV-037,dw-03,PRJ-06,AWS,ap-northeast-2,192.0.2.28,16,64,Ubuntu 22.04,실행 중,2026-04-05
+SV-038,dw-04,PRJ-06,AWS,ap-northeast-2,192.0.2.29,2,4,Rocky Linux 9,실행 중,2025-07-18
+SV-039,dw-05,PRJ-06,AWS,ap-northeast-2,192.0.2.30,2,8,Rocky Linux 9,실행 중,2026-05-27
+SV-040,dw-06,PRJ-06,사내 서버,본사 IDC,203.0.113.17,2,8,Ubuntu 24.04,실행 중,2026-01-29
+SV-041,bot-01,PRJ-07,AWS,ap-northeast-2,192.0.2.31,4,16,Ubuntu 22.04,실행 중,2025-12-23
+SV-042,bot-02,PRJ-07,AWS,ap-northeast-2,192.0.2.32,2,4,Windows Server 2022,실행 중,2026-05-08
+SV-043,bot-03,PRJ-07,AWS,ap-northeast-2,192.0.2.33,4,8,Windows Server 2022,실행 중,2025-08-07
+SV-044,bot-04,PRJ-07,AWS,ap-northeast-2,192.0.2.34,2,4,Windows Server 2022,실행 중,2026-09-15
+SV-045,bot-05,PRJ-07,AWS,ap-northeast-2,192.0.2.35,8,32,Ubuntu 22.04,실행 중,2026-06-01
+SV-046,bot-06,PRJ-07,Azure,koreacentral,198.51.100.21,8,16,Ubuntu 22.04,실행 중,2026-03-09
+SV-047,bot-07,PRJ-07,Azure,koreacentral,198.51.100.22,16,64,Rocky Linux 9,실행 중,2025-10-11
+SV-048,bot-08,PRJ-07,Azure,koreacentral,198.51.100.23,8,32,Rocky Linux 9,실행 중,2025-08-05
+SV-049,infra-01,PRJ-08,AWS,ap-northeast-2,192.0.2.36,8,16,Ubuntu 24.04,실행 중,2025-09-28
+SV-050,infra-02,PRJ-08,AWS,ap-northeast-2,192.0.2.37,16,64,Windows Server 2022,실행 중,2025-08-19
+SV-051,infra-03,PRJ-08,AWS,ap-northeast-2,192.0.2.38,8,16,Windows Server 2022,실행 중,2025-03-31
+SV-052,infra-04,PRJ-08,AWS,ap-northeast-2,192.0.2.39,2,4,Windows Server 2022,오류,2026-06-28
+SV-053,infra-05,PRJ-08,AWS,ap-northeast-2,192.0.2.40,16,64,Windows Server 2022,중지,2025-12-08
+SV-054,infra-06,PRJ-08,사내 서버,본사 IDC,203.0.113.18,4,16,Ubuntu 24.04,실행 중,2025-08-26
+SV-055,infra-07,PRJ-08,AWS,ap-northeast-2,192.0.2.41,8,32,Windows Server 2022,중지,2026-02-24
+SV-056,infra-08,PRJ-08,AWS,ap-northeast-2,192.0.2.42,8,16,Windows Server 2022,실행 중,2026-06-09
+SV-057,infra-09,PRJ-08,Azure,koreacentral,198.51.100.24,4,16,Rocky Linux 9,실행 중,2026-07-27
+SV-058,infra-10,PRJ-08,AWS,ap-northeast-2,192.0.2.43,2,4,Ubuntu 22.04,실행 중,2026-03-24

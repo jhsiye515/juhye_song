@@ -1,0 +1,13 @@
+﻿id,name,email,dept,role
+U01,김하늘,user01@example.com,인프라운영팀,관리자
+U02,이예린,user02@example.com,인프라운영팀,관리자
+U03,박건우,user03@example.com,데이터팀,운영자
+U04,최지호,user04@example.com,고객지원팀,조회자
+U05,정주원,user05@example.com,인프라운영팀,관리자
+U06,강도윤,user06@example.com,플랫폼개발팀,운영자
+U07,조시우,user07@example.com,주문서비스팀,운영자
+U08,윤수아,user08@example.com,데이터팀,조회자
+U09,장민준,user09@example.com,고객지원팀,관리자
+U10,임채원,user10@example.com,인프라운영팀,운영자
+U11,한서연,user11@example.com,플랫폼개발팀,운영자
+U12,오다은,user12@example.com,주문서비스팀,조회자
