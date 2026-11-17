@@ -1,0 +1,1277 @@
+<meta charset="utf-8">
+<title>OPS 기획 · 품질</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="ds/portal.css">
+
+<svg width="0" height="0" class="ic-sprite" aria-hidden="true"><defs><symbol id="i-wide" viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M4 4l6 6M20 20l-6-6"/></symbol><symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol><symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol><symbol id="i-go" viewBox="0 0 24 24"><path d="M5 12h13M13 7l5 5-5 5"/></symbol><symbol id="i-side" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol><symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol><symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"/></symbol><symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol><symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol><symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h.01"/></symbol><symbol id="i-n-home" viewBox="0 0 24 24"><path d="M5 12H3l9-9 9 9h-2"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></symbol><symbol id="i-n-plans" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13h6M9 17h4"/></symbol><symbol id="i-n-open" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 17v.01M12 13.5a2 2 0 1 0-2-2"/></symbol><symbol id="i-n-qa" viewBox="0 0 24 24"><path d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3"/><path d="M9 12l2 2 4-4"/></symbol><symbol id="i-n-policies" viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6v13M12 6v13M21 6v13"/></symbol><symbol id="i-n-guides" viewBox="0 0 24 24"><path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM9 4v16M12 8h4M12 12h4"/></symbol><symbol id="i-n-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M14 4v16"/></symbol></defs></svg>
+
+<aside class="gnb">
+  <div class="gtop"><a class="brand" href="#/" aria-label="OPS 기획 · 품질 홈"><svg class="mark" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7"/><path d="M9 10.5h10M9 14h10M9 17.5h6"/></svg><b>OPS</b><span>기획 · 품질</span></a><button class="ibtn" id="navx" type="button" aria-label="메뉴 접기" title="메뉴 접기"><svg class="ic"><use href="#i-side"/></svg></button></div>
+  <form class="srch" id="sf" role="search"><svg class="ic"><use href="#i-search"/></svg><input id="q" type="search" placeholder="ID · 단어 검색  /" aria-label="검색 (단축키 /)"></form>
+  <nav id="gnav" aria-label="메뉴"></nav>
+  <div class="ver" id="ver"></div>
+</aside>
+<button class="ibtn navo" id="navo" type="button" aria-label="메뉴 펴기" title="메뉴 펴기"><svg class="ic"><use href="#i-side"/></svg></button>
+<main class="main" id="pg"><section class="band" id="band"></section><div class="wrap" id="page"></div></main>
+<aside class="panel" id="sidehost" hidden aria-label="상세"><div id="pnl" style="display:contents"></div></aside>
+
+<script>
+const D = __DATA__;
+const byDoc = Object.fromEntries(D.docs.map(d => [d.id, d]));
+const KIND = {qa:'품질 검사 결정', rule:'규칙', open:'미확정', draft:'검토 중 규칙안', fn:'기능', rq:'요구사항', scr:'화면', pl:'정책', oq:'미결정', doc:'정책 문서', review:'논의 필요', cross:'문서 간 충돌', recheck:'담당자 확인 대기', gap:'정책 · 코드 불일치'};
+const ids = Object.keys(D.defs).sort((a, b) => b.length - a.length);
+const idRe = new RegExp('(?<![A-Za-z0-9-])(' + ids.map(s => s.replace(/[-]/g, '\\-')).join('|') + ')(?![A-Za-z0-9-])', 'g');
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const enc = encodeURIComponent;
+const planOf = id => D.plans.find(p => p.docs.includes(id));
+const isPlanDoc = id => byDoc[id] && byDoc[id].kind === 'plan';
+const page = $('#page');
+
+// ───────── md ─────────
+function inl(t){
+  t = esc(t.replace(/\\([_|*\\\[\]()#.-])/g, '$1'));
+  t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+  t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, a, h) => /^https?:/.test(h) ? `<a href="${h}" target="_blank" rel="noopener">${a}</a>` : /^#\//.test(h) ? `<a href="${h}">${a}</a>` : a);
+  return t.replace(/&lt;br&gt;/g, '<br>');
+}
+// 기능 목록(양식 0.2, 칸 13개)은 기능 하나를 한 덩어리로 보인다
+// 기능 하나를 한 덩어리로: 머리(ID · 분류 · 배지) / 이름 / 설명 / 연결(화면 · 정책 · 요구사항 · 비고)을 칸으로 나눈다
+function fnCards(h, rs){
+  const v = (r, k) => { const i = h.indexOf(k); const x = i < 0 ? '' : (r[i] || ''); return x === '—' ? '' : x; };
+  const bdg = (t, c) => t ? `<span class="bdg ${c || ''}">${inl(t)}</span>` : '';
+  const row = (k, t, txt) => t ? `<div class="${txt ? 'txt' : ''}"><dt>${k}</dt><dd>${inl(t)}</dd></div>` : '';
+  return '<div class="fncards">' + rs.map(r => `<section class="fn">`
+    + `<div class="fh"><span class="fid">${esc(v(r, '기능 ID'))}</span><span class="fcat">${inl([v(r, '대분류'), v(r, '중분류')].filter(Boolean).join(' › '))}</span>`
+    + `<span class="fchips">${bdg(v(r, '구분'), v(r, '구분') === '신규' ? 'acc' : '')}${bdg(v(r, '우선순위') && '우선 ' + v(r, '우선순위'))}${bdg(v(r, '권한') && '권한 ' + v(r, '권한'))}${bdg(v(r, '난이도') && '난이도 ' + v(r, '난이도'))}</span></div>`
+    + `<h4 class="fname">${inl(v(r, '기능명'))}</h4>`
+    + `<p class="fdesc">${inl(v(r, '기능 설명'))}</p>`
+    + `<dl class="flinks">${row('화면', v(r, '화면 ID'))}${row('정책', v(r, '정책 ID'))}${row('요구사항', v(r, '요구사항 ID'))}${row('비고', v(r, '비고'), true)}</dl></section>`).join('') + '</div>';
+}
+function md2html(src){
+  /* md 주석(<!-- … -->)은 작성 안내라 화면에 싣지 않는다 */
+  const L = src.replace(/\r/g,'').replace(/<!--[\s\S]*?-->\n?/g,'').split('\n'), out = []; let i = 0;
+  const cells = l => l.trim().replace(/^\|/,'').replace(/\|$/,'').split(/(?<!\\)\|/).map(x => x.trim());
+  while (i < L.length){
+    const l = L[i];
+    if (/^```/.test(l)){ const b=[]; i++; while(i<L.length && !/^```/.test(L[i])) b.push(L[i++]); i++; out.push('<pre><code>'+esc(b.join('\n'))+'</code></pre>'); continue; }
+    let m = l.match(/^(#{1,6})\s+(.*)$/); if (m){ const n = Math.min(m[1].length, 3); out.push(`<h${n}>${inl(m[2])}</h${n}>`); i++; continue; }
+    if (/^\s*\|/.test(l) && i+1<L.length && /^\s*\|?\s*:?-{2,}/.test(L[i+1])){
+      const h = cells(l); i += 2; const rs=[];
+      while (i<L.length && /^\s*\|/.test(L[i])) rs.push(cells(L[i++]));
+      if (h[0] === '기능 ID'){ out.push(fnCards(h, rs)); continue; }
+      out.push('<div class="card"><div class="tscroll"><table class="tb"><thead><tr>'+h.map(c=>'<th>'+inl(c)+'</th>').join('')+'</tr></thead><tbody>'+rs.map(r=>'<tr>'+r.map(c=>'<td>'+inl(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div></div>'); continue; }
+    if (/^\s*[-*] /.test(l)){ const it=[]; while(i<L.length && /^\s*[-*] /.test(L[i])) it.push(L[i++].replace(/^\s*[-*] /,'')); out.push('<ul>'+it.map(x=>'<li>'+inl(x)+'</li>').join('')+'</ul>'); continue; }
+    if (/^\s*\d+\. /.test(l)){ const it=[]; while(i<L.length && /^\s*\d+\. /.test(L[i])) it.push(L[i++].replace(/^\s*\d+\. /,'')); out.push('<ol>'+it.map(x=>'<li>'+inl(x)+'</li>').join('')+'</ol>'); continue; }
+    if (/^>\s?/.test(l)){ const b=[]; while(i<L.length && /^>\s?/.test(L[i])) b.push(L[i++].replace(/^>\s?/,'')); out.push('<blockquote>'+inl(b.join(' '))+'</blockquote>'); continue; }
+    if (/^\s*(---|\*\*\*)\s*$/.test(l) || !l.trim()){ i++; continue; }
+    const p=[]; while(i<L.length && L[i].trim() && !/^(#{1,6}\s|```|\s*\||\s*[-*] |\s*\d+\. |>)/.test(L[i])) p.push(L[i++]);
+    if (!p.length) p.push(L[i++]);
+    out.push('<p>'+inl(p.join(' '))+'</p>');
+  }
+  return out.join('\n');
+}
+function idHref(id){ const d = D.defs[id]; return d.kind === 'doc' ? `#/doc/${enc(id)}` : `#/doc/${enc(d.doc)}/${enc(id)}`; }
+function linkify(root){
+  if (!root) return;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode: n => n.parentElement.closest('a,pre') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+  const ns = []; while (w.nextNode()) ns.push(w.currentNode);
+  for (const n of ns){
+    idRe.lastIndex = 0; if (!idRe.test(n.nodeValue)) continue; idRe.lastIndex = 0;
+    const s = document.createElement('span');
+    s.innerHTML = esc(n.nodeValue).replace(idRe, id => `<a class="rid" href="${idHref(id)}" title="${esc(KIND[D.defs[id].kind] + ' · ' + D.defs[id].label)}">${id}</a>`);
+    n.replaceWith(...s.childNodes);
+  }
+}
+// 문서 본문. 2단계 제목이 넷 이상이면 오른쪽에 목차
+// 문서 본문을 읽기 틀로 그린다: 목차 · 본문 · 옆 정보(rail). 제목이 둘 미만이면 목차를 뺀다
+function renderDoc(d, el, rail){
+  el.innerHTML = `<div class="reading"><article class="doc md">${md2html(d.body)}</article><aside class="aside"><nav class="toc" aria-label="이 페이지 목차"></nav>${rail || ''}</aside></div>`;
+  const md = el.querySelector('.md'), toc = el.querySelector('.toc');
+  const h1 = md.querySelector('h1'); if (h1 && h1 === md.firstElementChild) h1.remove();
+  md.querySelectorAll('h2').forEach(h => {
+    if (!h.textContent.trim().startsWith('미확정')) return;
+    const box = document.createElement('div'); box.className = 'open'; h.before(box);
+    let n = h; while (n && !(n !== h && /^H[12]$/.test(n.tagName))){ const nx = n.nextElementSibling; box.appendChild(n); n = nx; }
+  });
+  md.querySelectorAll('h1,h2,h3').forEach(h => { const m = h.textContent.match(/([A-Z]{3}-(?:PL|FN)-[A-Z]+-\d+)/); if (m && D.defs[m[1]]) h.id = 'r-' + m[1]; });
+  md.querySelectorAll('tr').forEach(tr => {
+    const c = tr.querySelector('td'); if (!c) return;
+    const id = c.textContent.trim();
+    if (!D.defs[id] || D.defs[id].doc !== d.id) return;
+    tr.id = 'r-' + id;
+    const r = (D.refs[id] || []), fromPlan = r.filter(x => isPlanDoc(x.doc) && x.doc !== d.id).length;
+    if (r.length) c.insertAdjacentHTML('beforeend', `<a class="refn" href="#/id/${enc(id)}" title="참조 위치 보기">${d.kind === 'policy' && fromPlan ? '기획 ' + fromPlan + '곳' : '참조 ' + r.length + '곳'}</a>`);
+  });
+  const hs = [...md.querySelectorAll('h2,h3')];
+  if (hs.length >= 2){
+    toc.innerHTML = '<div class="gh">이 페이지 목차</div>' + hs.map((h, k) => `<button type="button" class="${h.tagName === 'H3' ? 'l3' : ''}" data-k="${k}">${esc(h.textContent.replace(/(기획|참조) \d+곳$/, ''))}</button>`).join('');
+    const bs = [...toc.querySelectorAll('[data-k]')], pg = $('#pg');
+    toc.onclick = e => { const b = e.target.closest('[data-k]'); if (b) hs[+b.dataset.k].scrollIntoView({block: 'start'}); };
+    const mark = () => { let k = 0; hs.forEach((h, i) => { if (h.getBoundingClientRect().top < 140) k = i; }); bs.forEach((b, i) => b.classList.toggle('on', i === k)); };
+    pg.onscroll = mark; mark();
+  } else { toc.remove(); $('#pg').onscroll = null; if (!rail) el.firstElementChild.classList.add('solo'); }
+  const fns = md.querySelectorAll('.fncards .fn'); if (fns.length){
+    const cat = {}; fns.forEach(f => { const c = (f.querySelector('.fcat')?.textContent || '').split('›')[0].trim() || '기타'; cat[c] = (cat[c] || 0) + 1; });
+    el.querySelector('.aside').insertAdjacentHTML('beforeend', `<div class="rbox"><h3>기능정의서 요약</h3><div class="qnum"><div><b>${fns.length}</b><span>기능</span></div><div><b>${Object.keys(cat).length}</b><span>영역</span></div></div><p class="mut" style="margin:0;font-size:13px">${Object.entries(cat).map(([k, n]) => `${esc(k)} ${n}`).join(' · ')}</p></div>`); }
+  linkify(md);
+  sizeTables(md);
+}
+// 문서 표의 칸 폭을 내용 길이에 맞춘다. ID만 든 칸은 좁게 고정하고, 문장이 든 칸에 남는 폭을 준다
+function sizeTables(md){
+  md.querySelectorAll('table.tb').forEach(tb => {
+    const rows = [...tb.querySelectorAll('tbody tr')], n = tb.querySelectorAll('thead th').length; if (!n || !rows.length) return;
+    const ws = [];
+    for (let c = 0; c < n; c++){
+      const cells = rows.map(r => r.children[c]).filter(Boolean), txt = cells.map(x => x.textContent.trim());
+      const longest = Math.max(...txt.map(x => x.length), 0), avg = txt.reduce((a, x) => a + x.length, 0) / (txt.length || 1);
+      const px = w => [...w].reduce((a, ch) => a + (/[가-힣]/.test(ch) ? 15.5 : 8.6), 0);   // 낱말 하나가 차지하는 폭
+      const word = Math.max(...txt.map(x => Math.max(...x.split(/[\s,·›>]+/).map(px), 0)), px(tb.querySelectorAll('thead th')[c].textContent.trim()));
+      const idOnly = txt.every(x => !x || /^[A-Za-z0-9 ._,\-()/—]+$/.test(x.replace(/(기획|참조) \d+곳$/, '')));
+      const one = idOnly && longest <= 30;            // ID 하나짜리 칸
+      cells.forEach(x => { if (one) x.classList.add('idc'); if (x.textContent.trim() === '—' || x.textContent.trim() === '-') x.classList.add('nil'); });
+      ws.push(one ? {fix: Math.min(180, Math.max(64, word + 30))} : idOnly ? {w: 26, min: Math.min(280, word + 30)} : {w: Math.min(46, Math.max(12, Math.sqrt(avg) * 3.6)), min: Math.min(260, Math.max(110, word + 30))});
+    }
+    const sum = ws.reduce((a, x) => a + (x.w || 0), 0) || 1, fixed = ws.reduce((a, x) => a + (x.fix || 0), 0);
+    const minW = fixed + ws.reduce((a, x) => a + (x.min || 0), 0);
+    tb.style.tableLayout = 'fixed'; tb.style.minWidth = Math.round(minW) + 'px';
+    const cg = document.createElement('colgroup');
+    cg.innerHTML = ws.map(x => x.fix ? `<col style="width:${Math.round(x.fix)}px">` : `<col style="width:${(x.w / sum * 100).toFixed(1)}%">`).join('');
+    tb.prepend(cg);
+  });
+}
+// ───────── 양식 부품을 그리는 작은 함수 ─────────
+// 쪽 머리(.ptitle) + 쪽 탭(.ptabs): 제목 + 탭 [키, 이름, 주소, 건수]
+let BAND = {};
+const head = o => { Object.assign(BAND, o); return ''; };
+const pgtabs = (title, tabs, on) => head({title, tabs, on});
+const SECK = {'홈': 'home', '기획': 'plans', '결정할 것': 'open', '품질': 'qa', '공통 정책': 'policies', '가이드': 'guides'};
+function drawBand(){
+  const b = BAND, c = b.crumb || [], el = $('#band');
+  const lead = page.firstElementChild && page.firstElementChild.matches('p.lead') ? page.firstElementChild : null;
+  el.className = 'band' + (b.tabs && b.tabs.length ? '' : ' solo') + (b.lift ? ' lift' : '');
+  const here = decodeURIComponent(location.hash || '#/');
+  const up = [...c.slice(0, -1)].reverse().find(x => x[1] && decodeURIComponent(x[1]) !== here);   // 바로 위 쪽: 「← 이전」 버튼이 간다
+  el.innerHTML = `<div class="wrap">${c.length > 1 ? `<nav class="crumb" aria-label="위치">${up ? `<a class="back" href="${up[1]}" aria-label="${up[2] || up[0]}로 돌아가기"><span aria-hidden="true">←</span>${up[2] || up[0]}</a><i class="bar"></i>` : ''}<ol class="lv">${c.map((x, i) => { const last = i === c.length - 1, k = i === 0 ? SECK[x[0]] : '', ic = k ? `<span class="gi gi-${k}"><svg class="ic"><use href="#i-n-${k}"/></svg></span>` : '';
+      return `<li${last ? ' aria-current="page"' : ''}>${last ? `<b>${ic}${x[0]}</b>` : x[1] ? `<a href="${x[1]}">${ic}${x[0]}</a>` : `<span>${ic}${x[0]}</span>`}</li>`; }).join('<li class="sep" aria-hidden="true"><svg class="ic"><use href="#i-chev"/></svg></li>')}</ol></nav>` : ''}
+    <div class="ptitle"><h1 class="${b.mono ? 'mono' : ''}">${b.title || (c.length ? c[c.length - 1][0] : '')}</h1>${b.badge || ''}</div>${b.meta ? `<div class="meta">${b.meta}</div>` : ''}<span id="bandlead"></span>${b.now ? `<div class="now">${b.now}</div>` : ''}
+    ${b.tabs && b.tabs.length ? `<nav class="ptabs" aria-label="쪽 탭">${b.tabs.map(([k, t, h, n]) => `<a class="${k === b.on ? 'on' : ''}" href="${h}">${esc(t)}${n !== undefined && n !== '' ? `<em>${n}</em>` : ''}</a>`).join('')}</nav>` : ''}</div>`;
+  if (lead) $('#bandlead').replaceWith(lead); else $('#bandlead').remove();
+  document.documentElement.style.setProperty('--bandh', el.offsetHeight + 'px');
+}
+window.addEventListener('resize', () => { const el = $('#band'); if (el) document.documentElement.style.setProperty('--bandh', el.offsetHeight + 'px'); });
+// 카드(.card .hd .bd). raw 면 본문을 .bd 없이(표를 꽉 채울 때)
+const card = (h2, body, opt = {}) => `<div class="card ${opt.cls || ''}">${h2 ? `<div class="hd"><h2>${h2}</h2>${opt.small ? `<small>${opt.small}</small>` : ''}${opt.right ? `<span style="margin-left:auto">${opt.right}</span>` : ''}</div>` : ''}${opt.raw ? body : `<div class="bd">${body}</div>`}</div>`;
+// 표(.tscroll .tb) + 도구줄(.tbar)
+const table = (head, rows, opt = {}) => `<div class="card">${opt.tbar ? `<div class="tbar">${opt.tbar}</div>` : ''}<div class="tscroll"><table class="tb ${opt.cls || ''}"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
+// 요약 타일(.sum): [이름, 수, 주소, 띠(o 여유 · w 임박 · c 초과 · p 진행), 단위]
+const sum = tiles => `<div class="sum">${tiles.map(([t, n, h, c, u, sub]) => `<div class="${c || ''} ${h ? 'go' : ''}" ${h ? `data-h="${h}" role="link" tabindex="0"` : ''}><small>${t}</small><b>${typeof n === 'number' ? n.toLocaleString() : n}${u ? `<em>${u}</em>` : ''}</b>${sub ? `<p>${sub}</p>` : ''}</div>`).join('')}</div>`;
+document.addEventListener('click', e => { const t = e.target.closest('.sum .go[data-h]'); if (t) location.hash = t.dataset.h; });
+document.addEventListener('keydown', e => { if (e.key === 'Enter'){ const t = e.target.closest && e.target.closest('.sum .go[data-h]'); if (t) location.hash = t.dataset.h; } });
+// 항목 비교 막대(.bars): [이름, 수, 주소, warn]
+const bars = (rows, max) => { max = max || Math.max(1, ...rows.map(r => r[1]));
+  return `<div class="bars">${rows.map(([t, n, h, w]) => `<div class="r ${w === true ? 'warn' : w || ''}" ${h ? `data-h="${h}"` : ''} title="${esc(t)} ${n}건"><span class="nm">${esc(t)}</span><span class="tr"><i style="width:${Math.max(2, n / max * 100)}%"></i></span><span class="vv">${n}건</span></div>`).join('')}</div>`; };
+document.addEventListener('click', e => { const r = e.target.closest('.bars .r[data-h]'); if (r) location.hash = r.dataset.h; });
+const ST = {draft: '작성 중', sample: '샘플 · 담당자 확인 전', 'in-review': '검토 중', approved: '확정'};
+// 상태 배지(.bdg): 확정 s3 · 검토 · 샘플 s0 · 그 밖 s4
+const stBdg = s => !s ? '-' : `<span class="bdg ${/확정|approved/.test(s) && !/미확정|일부/.test(s) ? 'ok' : /review|검토|초안|일부|sample|샘플/.test(s) ? 'warn' : ''}">${esc(ST[s] || s)}</span>`;
+const empty = (b, t) => `<div class="empty"><b>${b}</b>${t || ''}</div>`;
+// 심각도(.sev): 심각 C · 중요 M · 보통 · 사소 N
+const SV = ['심각', '중요', '보통', '사소'], PR = ['긴급', '높음', '낮음'];
+const ixOf = (a, v) => { const k = a.indexOf(v); return k < 0 ? 9 : k; };
+const sev = v => v ? `<span class="sev ${['C', 'M', 'N', 'N'][ixOf(SV, v)] || 'N'}"><i></i>${esc(v)}</span>` : '-';
+// 누가: 기획 s0 · 개발 s1
+const who = w => `<span class="bdg ${w === '개발' ? 'dev' : 'plan'}">${esc(w)}</span>`;
+
+// ───────── 지표 ─────────
+const VK = [['통과', 'vpass'], ['실패', 'vfail'], ['차단', 'vblock'], ['보류', 'vhold'], ['미실행', 'vnone']];
+// 통과율 = 통과 ÷ (통과 + 실패), 실행 = 통과 + 실패 (GD-09 · grading.md)
+function verdict(c){
+  const tot = VK.reduce((a, [k]) => a + (c[k] || 0), 0), run = (c['통과'] || 0) + (c['실패'] || 0);
+  return {tot, run, rate: run ? Math.round((c['통과'] || 0) / run * 100) : null, runRate: tot ? Math.round(run / tot * 100) : 0};
+}
+const vstk = c => { const v = verdict(c); return v.tot ? `<div class="vstk" role="img" aria-label="${VK.filter(([k]) => c[k]).map(([k]) => k + ' ' + c[k]).join(', ')}">${VK.filter(([k]) => c[k]).map(([k, cls]) => `<i class="${cls}" style="flex:${c[k]}" title="${k} ${c[k]}건"></i>`).join('')}</div>` : ''; };
+const vleg = () => `<div class="chleg">${VK.map(([k, cls]) => `<span><i class="${cls}"></i>${k}</span>`).join('')}</div>`;
+const qday = d => `20${d.slice(0, 2)}-${d.slice(2, 4)}-${d.slice(4)}`;
+// 시각은 YYYY-MM-DD HH:mm 한 꼴(G10). 기록의 “MM/DD HH:mm”에 만든 해를 붙인다
+const ymd = t => { const m = String(t || '').match(/^(\d\d)\/(\d\d) (\d\d:\d\d)$/); return m ? `${(D.built || '').slice(0, 4)}-${m[1]}-${m[2]} ${m[3]}` : t; };
+const planBy = k => D.plans.find(p => p.key === k) || {title: k, key: k};
+// 담당: 엑셀 “담당” 값을 기획 · 개발 · 디자인 셋으로 묶는다(원래 값은 상세에)
+const own = v => !v ? '-' : /디자인/.test(v) && !/기획|개발/.test(v) ? '디자인' : /개발/.test(v) && !/기획/.test(v) ? '개발' : '기획';
+const IK = {defect: '결함', decision: '결정 필요', todo: '진행 필요', ux: '개선 제안'};
+// 품질 검사 단계 번호(① ~ ⑦) → 이름 (품질 플러그인 SKILL.md 단계 표)
+const QSTEP = {'①': '케이스', '②': '클릭 검사', '③': '시나리오 · E2E', '④': 'API · 데이터', '⑤': '디자인 대조', '⑥': '판정 · 리포트', '⑦': '사용성 검토'};
+const stepName = v => String(v || '').replace(/[①-⑦]/g, m => `${m} ${QSTEP[m]}`);
+// 기획 누락 · 정책 충돌 · 기획 의도 불일치는 예전 결함 범주다. 지금은 결정 필요로만 올리므로 「기획 · 디자인 결함」에 넣지 않는다(GD-09 4.1)
+const DECIDE_CATS = ['기획 누락', '정책 충돌', '기획 의도 불일치'];
+const isPlanDef = i => i.kind === 'defect' && own(i.owner) !== '개발' && !DECIDE_CATS.includes(i.cat);
+// 품질요약.json(qs): 품질 플러그인이 올린 요약. 있으면 품질 숫자는 이것만 쓴다
+const QS = key => (D.plans.find(p => p.key === key) || {}).qs;
+const pct = v => v === null || v === undefined ? '-' : Math.round(v * 1000) / 10 + '%';
+const qsN = (q, path) => path.split('.').reduce((o, k) => o == null ? undefined : o[k], q);
+function planState(p){
+  const op = D.open.filter(o => p.docs.includes(o.doc) && o.kind === 'oq').length;
+  const is = D.issues.filter(i => i.plan === p.key && i.open);
+  const dev = is.filter(i => i.kind === 'defect' && own(i.owner) === '개발'), devHi = dev.filter(i => ixOf(SV, i.sev) <= 1);
+  const plan = is.filter(isPlanDef), dec = is.filter(i => i.kind === 'decision'), todo = is.filter(i => i.kind === 'todo'), q = p.qs;
+  const L = p.qa_latest, r = L && (p.qa || []).find(x => x.group === 'test' && x.day === L.day && x.round === L.round);
+  const rounds = (r && r.rounds) || [], last = rounds[rounds.length - 1];
+  const appr = /approved|확정/.test(p.status) && !/미확정/.test(p.status);
+  const next = [];
+  if (!L) next.push(!p.docs.length ? ['기획', '정의서(md)가 아직 없습니다. 기획서와 함께 정의서를 올립니다.'] : appr ? ['기획', '기획서가 확정됐습니다. 품질 검사(0차)를 요청할 수 있습니다.'] : ['기획', '기획서 검토 중입니다. 확정되면 품질 검사(0차)를 요청합니다.']);
+  const blk = q ? (qsN(q, '결정 필요.먼저 정할 것') || []).filter(x => x.unblocks) : [];
+  if (blk.length) next.push(['기획', `먼저 결정할 것 ${blk.length}건(풀리는 케이스 ${blk.reduce((a, x) => a + x.unblocks, 0)}개)부터 정합니다. 1위: ${blk[0].title}`]);
+  else if (dec.length) next.push(['기획', `결정 필요 ${q ? qsN(q, '결정 필요.남음') : dec.length}건을 정해야 다음 차수 검사를 합니다.`]);
+  if (devHi.length) next.push(['개발', `중요 이상 결함 ${devHi.length}건을 고칩니다.`]); else if (dev.length) next.push(['개발', `결함 ${dev.length}건을 고칩니다.`]);
+  if (plan.length) next.push(['기획', `기획서 결함 ${plan.length}건을 고칩니다.`]);
+  const cause = q && (qsN(q, '막힌 것.원인') || [])[0];
+  if (q && qsN(q, '막힌 것.케이스')) next.push(['기획', `실행 못 한 케이스 ${qsN(q, '막힌 것.케이스')}건${cause ? `: 가장 큰 원인은 「${cause.item}」(${cause.cases}건)` : ''}`]);
+  else if (todo.length) next.push(['기획', `진행 필요 ${todo.length}건은 계정 · 데이터가 준비되면 이어서 검사합니다.`]);
+  if (op && !dec.length) next.push(['기획', `정책정의서의 미결정 ${op}건을 정합니다.`]);
+  return {op, dev, devHi, plan, dec, todo, L, last, next};
+}
+// 기획 단계: 기획서 → 정의서 → 검토 → 확정 → 품질 검사
+const STAGES = [['기획서만', '정의서(md) 없음'], ['작성 중', '문서 상태: 작성 중 · 샘플'], ['검토 중', '문서 상태: 검토 중'], ['확정', '문서 상태: 확정, 품질 검사 전'], ['품질 검사', '품질 검사 기록 있음']];
+function stageOf(p){
+  if ((p.qa || []).length) return 4;
+  if (!p.docs.length) return 0;
+  if (/approved|확정/.test(p.status) && !/미확정/.test(p.status)) return 3;
+  if (/review|검토/.test(p.status)) return 2;
+  return 1;
+}
+// 양식 Steps(.steps .step done · now)
+const steps = p => { const k = stageOf(p); return `<div class="steps"><div class="bar">${STAGES.map((x, i) => `<i class="${i < k ? 'done' : i === k ? 'now' : ''}"></i>`).join('')}</div><div class="lbl">${STAGES.map(([t], i) => i === k ? `<b>${t}</b>` : `<span>${t}</span>`).join('')}</div></div>`; };
+const todoList = s => s.next.length ? `<ul class="todo">${s.next.map(([w, t]) => `<li>${who(w)}<span>${esc(t)}</span></li>`).join('')}</ul>` : '<p class="mut" style="margin:0">할 일이 없습니다.</p>';
+function qaCount(key){
+  const is = D.issues.filter(i => (!key || i.plan === key) && i.open), n = k => is.filter(i => i.kind === k).length;
+  const qs = (key ? [QS(key)] : D.plans.map(p => p.qs)).filter(Boolean), all = key ? !!qs.length : qs.length && qs.length === D.plans.filter(p => p.qa_latest).length;
+  const per = (f, path) => D.plans.filter(p => !key || p.key === key).reduce((a, p) => a + (p.qs && qsN(p.qs, path) != null ? qsN(p.qs, path) : is.filter(i => i.plan === p.key && f(i)).length), 0);
+  const lst = f => is.filter(f).length;
+  return {dev: lst(i => i.kind === 'defect' && own(i.owner) === '개발'), plan: lst(isPlanDef), qsDev: per(i => i.kind === 'defect' && own(i.owner) === '개발', '결함.개발이 고칠 것'), qsPlan: per(isPlanDef, '결함.기획 · 디자인이 고칠 것'), decision: per(i => i.kind === 'decision', '결정 필요.남음'), todo: n('todo'), ux: n('ux'),
+    blocked: qs.length ? qs.reduce((a, q) => a + (qsN(q, '막힌 것.케이스') || 0), 0) : null, qsAll: all, qs};
+}
+const qaTiles = (key, noHead) => { const c = qaCount(key), k = key || 'all', q = key && QS(key);
+  // 타일 숫자는 누르면 나오는 목록 건수다. 품질요약(초안일 수 있음) 숫자와 다르면 아래 줄에 함께 적는다
+  const diff = (n, qn) => qn != null && qn !== n ? `품질요약은 ${qn}건 · 초안이라 다를 수 있음` : '';
+  const head = q && !noHead ? [['검증 완료율', pct(q['검증 완료율']), `#/plan/${key}/qa`, q['검증 완료율'] < .5 ? 'w' : '', '', `통과 ${qsN(q, '케이스.통과')} ÷ 진척 대상 ${qsN(q, '케이스.진척 대상')} · 통과율 ${pct(q['통과율'])}`]] : [];
+  const blockT = c.blocked !== null ? ['실행 못 함', c.blocked, `#/issues/${k}/todo`, c.blocked ? 'w' : 'o', '건', key && q ? `원인 ${(qsN(q, '막힌 것.원인') || []).length}가지` : '품질요약이 있는 기획만'] : ['진행 필요', c.todo, `#/issues/${k}/todo`, '', '건'];
+  return sum([...head, ['개발 결함', c.dev, `#/issues/${k}/defect/개발`, c.dev ? 'dev' : 'o', '건', diff(c.dev, c.qsDev)], ['기획 · 디자인 결함', c.plan, `#/issues/${k}/defect/!개발`, c.plan ? 'plan' : 'o', '건', diff(c.plan, c.qsPlan)], ['결정 필요', q ? qsN(q, '결정 필요.남음') : c.decision, '#/open/qa', c.decision ? 'w' : 'o', '건', q ? `전체 ${qsN(q, '결정 필요.전체')} · 결정 ${qsN(q, '결정 필요.결정')}` : ''], blockT, ...(q ? [] : [['개선 제안', c.ux, `#/issues/${k}/ux`, '', '건']])]); };
+// 품질요약 머리: 검증 완료율(주) · 통과율(보조) · 차수 종료 기준 · 초안 · 만든 시각 · 출처
+function qsHead(p, more){
+  const q = p.qs; if (!q) return '';
+  const crit = qsN(q, '차수 종료 기준') || {}, items = Object.entries(crit['항목'] || {});
+  const src = (q['출처'] || []).map(x => typeof x === 'string' ? x : Object.entries(x).map(([k, v]) => `${k} ${v}`).join(' · ')).filter(Boolean);
+  return `<div class="card qsh"><div class="hd"><h2>최신 품질 검사</h2><small>${esc(q['차수'] || '')}</small>${more ? `<span style="margin-left:auto"><a href="${more}">품질 자세히 보기</a></span>` : ''}</div><div class="bd"><div class="qsh-top"><div class="qbig"><b>${pct(q['검증 완료율'])}</b><span>검증 완료율 · 통과 ${qsN(q, '케이스.통과')} ÷ 진척 대상 ${qsN(q, '케이스.진척 대상')}</span></div>
+    <div class="qbig sm"><b>${pct(q['통과율'])}</b><span>통과율 · 실행한 ${qsN(q, '케이스.실행')}건 중</span></div>
+    <div class="qbig sm"><b>${qsN(q, '케이스.실행 못 함')}</b><span>실행 못 한 케이스</span></div>
+    <div class="qsh-bdg">${crit['충족'] ? '<span class="bdg ok">차수 종료 기준 충족</span>' : '<span class="bdg warn">차수 종료 기준 못 채움</span>'}${q['초안'] ? `<span class="bdg bad">초안 · 누수 ${q['누수']}건</span>` : ''}</div></div>
+    ${items.length ? `<ul class="crit">${items.map(([k, v]) => `<li class="${v ? 'ok' : 'no'}">${v ? '✓' : '✕'} ${esc(k)}</li>`).join('')}</ul>` : ''}
+    <p class="mut qsh-src">${esc(q['차수'] || '')} · 만든 시각 ${esc(q['만든 시각'] || '-')}${src.length ? ' · 출처 ' + src.map(esc).join(' / ') : ' · 출처 기록 없음'}</p></div></div>`;
+}
+// 다음에 할 일: 기획은 먼저 정할 것(풀리는 케이스 순), 개발은 먼저 고칠 것, 막힌 원인
+function qsNext(p){
+  const q = p.qs; if (!q) return '';
+  const dec = qsN(q, '결정 필요.먼저 정할 것') || [], fix = qsN(q, '결함.먼저 고칠 것') || [], bl = qsN(q, '막힌 것.원인') || [];
+  const li = (id, t, sub, n) => `<li><a class="rid" href="#/issue/${enc(id)}">${esc(id)}</a><div><span>${esc(t)}</span>${sub ? `<small>${sub}</small>` : ''}</div>${n !== undefined ? `<b>${n}</b>` : ''}</li>`;
+  return `<div class="sec"><h2>다음에 할 일</h2><small>품질요약 기준 · 위에서부터 처리합니다</small></div><div class="grid3 qnext">
+    ${card(`${who('기획')} 먼저 결정할 것`, dec.length ? `<ol class="qlist">${dec.map(x => li(x.id, x.title, x.recommend ? '추천: ' + esc(x.recommend) : '', x.unblocks ? `+${x.unblocks}` : '')).join('')}</ol><span class="help">오른쪽 수는 정하면 다시 돌릴 수 있는 케이스 수입니다.</span>` : empty('결정할 것이 없습니다.'), {raw: false, small: `남음 ${qsN(q, '결정 필요.남음')}건`})}
+    ${card(`${who('개발')} 먼저 고칠 것`, fix.length ? `<ol class="qlist">${fix.map(x => li(x.id, x.title, [x['심각도'], x['우선순위'], x.tc].filter(Boolean).map(esc).join(' · '))).join('')}</ol>` : empty('고칠 결함이 없습니다.'), {small: `개발 결함 ${qsN(q, '결함.개발이 고칠 것')}건`})}
+    ${card('막힌 원인', bl.length ? `<ol class="qlist">${bl.map(x => `<li><span class="mono">${esc(x.step || '')}</span><div><span>${esc(x.item)}</span>${x.why ? `<small>${esc(x.why)}</small>` : ''}</div><b>${x.cases}</b></li>`).join('')}</ol><span class="help">오른쪽 수는 그 원인으로 실행하지 못한 케이스 수입니다.</span>` : empty('막힌 케이스가 없습니다.'), {small: `실행 못 함 ${qsN(q, '막힌 것.케이스')}건`})}</div>`;
+}
+
+// ───────── 메뉴: 왼쪽 메뉴(영역 + 하위 메뉴). 한 쪽 안의 갈래는 띠의 쪽 탭이 맡는다 ─────────
+// 품질 검사에서 나온 결정 필요(열린 것)를 결정할 것 목록에 함께 넣는다. 풀리는 케이스 수는 품질요약에서
+// 목록 CSV 받기: 엑셀이 한글을 바로 읽게 BOM 을 붙인다
+function csvDown(name, head, rows){
+  const q = v => { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const blob = new Blob(['\ufeff' + [head, ...rows].map(r => r.map(q).join(',')).join('\r\n')], {type: 'text/csv'}), a = document.createElement('a');
+  const d = new Date(), ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+  a.href = URL.createObjectURL(blob); a.download = `${name}-${ymd}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function copyLink(btn, hash){ const u = location.origin + location.pathname + hash; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { btn.textContent = '복사했습니다'; setTimeout(() => btn.textContent = '링크 복사', 1500); }, () => prompt('이 주소를 복사하세요', u)); }
+function issueDetail(i){ const p = planBy(i.plan); return {key: i.id, title: i.title, head: `<span class="bdg">${IK[i.kind]}</span>${i.status && i.status !== IK[i.kind] ? `<span class="bdg ${i.open ? 'warn' : 'ok'}">${esc(i.status)}</span>` : ''}${i.sev ? sev(i.sev) : ''}<span class="bdg">${esc(own(i.owner))}</span><span class="mut">${esc(p.title)}${own(i.owner) !== i.owner ? ` · 엑셀 담당 “${esc(i.owner || '-')}”` : ''}</span>`, fields: issueFields(i), img: i.img,
+        links: `<button type="button" class="btn sm" onclick="copyLink(this, '#/issue/${esc(i.id)}')">링크 복사</button><a class="btn sm" href="${i.src}" download>정본 엑셀 (${esc(i.round)})</a><a class="btn sm" href="#/plan/${p.key}/qa">차수별 결과</a><a class="btn sm" href="#/plan/${p.key}">기획서 · 정의서</a>`,
+        foot: '상태는 정본 엑셀이 정합니다(지라 연결은 확정 전). 결정이 필요한 항목은 「결정할 것 › 결정 회의」에서 고릅니다.'}; }
+function qaDecOpen(){
+  const ub = {}; D.plans.forEach(p => ((p.qs && p.qs['결정 필요'] && p.qs['결정 필요']['먼저 정할 것']) || []).forEach(x => { ub[x.id] = x.unblocks || 0; }));
+  return D.issues.filter(i => i.kind === 'decision' && i.open).map(i => ({id: i.id, label: i.title, kind: 'qa', plan: i.plan, doc: '', who: '기획', pri: '', now: ub[i.id] ? `풀리는 케이스 ${ub[i.id]}개` : (i.cat || ''), need: i.rec || '', unblocks: ub[i.id] || 0, _i: i}))
+    .sort((a, b) => b.unblocks - a.unblocks || a.id.localeCompare(b.id, 'en', {numeric: true}));
+}
+const QTABS = () => [['qa', '품질 현황', '#/qa'], ['issues', '품질 이슈', '#/issues', D.issues.filter(i => i.open && (i.kind === 'defect' || i.kind === 'ux') && !DECIDE_CATS.includes(i.cat)).length], ['todo', '진행 필요 (QA)', '#/issues/all/todo', D.issues.filter(i => i.open && i.kind === 'todo').length], ['ui', '화면 문구 · 용어', '#/ui', uiAll().filter(o => o.open).length], ['gd', '품질 검사 운영', '#/doc/GD-09']];
+const OG = [
+  ['qa', '품질 검사를 막는 결정', '품질 검사에서 기획서가 정하지 않았거나 공통 정책과 부딪힌 곳입니다. 정하면 막힌 케이스를 다시 돌립니다. 풀리는 케이스가 많은 순서입니다', o => o.kind === 'qa'],
+  ['oq', '기획 미결정', '기획마다 정책정의서 “미결정 항목”에 올린 것입니다', o => o.kind === 'oq'],
+  ['cross', '문서 간 충돌', '두 정책이 같은 대상을 다르게 적었습니다. 따를 정책을 정합니다', o => o.kind === 'cross'],
+  ['review', '논의 필요', '선택지를 정리해 둔 검토 항목입니다. 담당자가 하나를 고릅니다', o => o.kind === 'review'],
+  ['recheck', '담당자 확인 대기', '담당자 대신 판단해 적어 둔 규칙입니다. 담당자가 확인합니다. 결정 기록 6장에 있습니다', o => o.kind === 'recheck'],
+  ['gap', '정책 · 코드 불일치', '정책과 운영 중인 코드가 다른 곳입니다. 코드를 고칠지 정책을 고칠지 정합니다', o => o.kind === 'gap'],
+  ['all', '공통 정책 미확정', '공통 정책마다 “미확정” 표에 올린 것입니다. 문서 간 충돌 · 논의 필요와 겹치는 항목이 있습니다', o => o.kind === 'open' || o.kind === 'draft'],
+];
+const SECTIONS = [['home', '홈', '#/'], ['plans', '기획', '#/plans'], ['open', '결정할 것', '#/open/qa'], ['qa', '품질', '#/qa'], ['policies', '공통 정책', '#/policies'], ['guides', '가이드', '#/guides']];
+// 왼쪽 메뉴: 영역 여섯과 그 아래 하위 메뉴. 하위 메뉴는 늘 펼쳐 두고, 문서가 많은 공통 정책 · 가이드만 줄여 둔다
+function nav(sec, active){
+  const planN = nOpen(PLAN_OG), polN = nOpen(POL_OG), qaN = D.issues.filter(i => i.open && (i.kind === 'defect' || i.kind === 'ux') && !DECIDE_CATS.includes(i.cat)).length;
+  const top = (k, t, h, n, hasSub = true) => `<div class="grp ${navOpen(k, sec) ? 'open' : ''}" data-k="${k}"><a href="${h}" class="${k === sec ? 'on' : ''}"><span class="gi gi-${k}"><svg class="ic"><use href="#i-n-${k}"/></svg></span><span class="gl">${t}</span>${n ? `<span class="n">${n}</span>` : ''}</a>${hasSub ? `<button type="button" class="tg" aria-label="${t} 하위 메뉴 펼치기" aria-expanded="${navOpen(k, sec)}"><svg class="ic"><use href="#i-chev"/></svg></button>` : ''}`;
+  const a = (h, t, n, dot) => `<a href="${h}" class="${active === h ? 'on' : ''}">${dot ? `<i class="dot ${dot}"></i>` : ''}<span>${t}</span>${n !== undefined && n !== '' ? `<span class="n">${n}</span>` : ''}</a>`;
+  const sub = x => `<div class="sub">${x}</div></div>`;
+  const dotOf = st => /approved|확정/.test(st) && !/미확정/.test(st) ? 'ok' : 'warn';
+  const groups = {};
+  D.docs.filter(d => d.kind === 'policy').sort((x, y) => x.order - y.order || x.title.localeCompare(y.title)).forEach(d => (groups[d.group] = groups[d.group] || []).push(d));
+  const gd = D.docs.filter(d => d.kind === 'guide' && d.id !== 'GD-09').sort((x, y) => x.order - y.order);
+  $('#gnav').innerHTML = top('home', '홈', '#/', '', false) + '</div>'
+    + top('plans', '기획', '#/plans', '') + sub(D.plans.map(p => a(`#/plan/${p.key}`, esc(p.title), D.open.filter(o => (p.docs.includes(o.doc) && o.kind === 'oq') || (o.kind === 'qa' && o.plan === p.key)).length || '', dotOf(p.status))).join(''))
+    + top('open', '결정할 것', '#/open/qa', planN) + sub(PLAN_OG.map(k => OG.find(x => x[0] === k)).map(([k, t, , f]) => a(`#/open/${k}`, t, D.open.filter(f).length)).join('') + a('#/decide', '결정 회의 · 모아 보기'))
+    + top('qa', '품질', '#/qa', qaN) + sub(QTABS().map(([k, t, h, n]) => a(h, t, n)).join(''))
+    + top('policies', '공통 정책', '#/policies', polN) + sub(a('#/open/all', '정책 미결', polN) + Object.entries(groups).map(([g, ds]) => { const on = ds.some(d => active === '#/doc/' + enc(d.id)); return `<a href="#/policies/${enc(g)}" class="${on || active === '#/policies/' + enc(g) ? 'on' : ''}"><span>${esc(g)}</span><span class="n">${ds.length}</span></a>`; }).join(''))
+    + top('guides', '가이드', '#/guides', '') + sub(a('#/help', '포털 쓰는 법') + gd.filter(d => ['GD-03', 'GD-04', 'GD-05', 'GD-06'].includes(d.id) || active === '#/doc/' + enc(d.id)).map(d => a(`#/doc/${enc(d.id)}`, esc(d.title))).join('') + a('#/guides', `전체 문서 ${gd.length}개`));
+  $('#ver').innerHTML = `<a href="#/help">포털 쓰는 법</a><br>main ${esc(D.commit)}<br>${esc(D.built)} 기준<br><a href="${D.repo}" target="_blank" rel="noopener">GitHub 저장소 ↗</a><div class="lklg"><span><i class="k-ext"></i>새 창</span><span><i class="k-go"></i>다른 쪽</span><span><i class="k-pn"></i>옆 패널</span><span><i class="ft ft-xlsx">XLS</i>받기</span></div>`;
+  const on = $('#gnav .sub a.on') || $('#gnav > a.on'); if (on) on.scrollIntoView({block: 'nearest'});
+}
+// 메뉴 접기 · 펴기. 고른 상태를 브라우저에 기억한다
+// 왼쪽 메뉴: 기본은 접힌 아이콘 줄이고, 마우스를 올리면 하위 메뉴까지 펼친다. 단추로 펼친 채 고정하고 브라우저가 기억한다
+const navPin = on => { document.body.classList.toggle('navpin', on); const b = $('#navx'); b.title = on ? '메뉴 접기' : '메뉴 펼쳐 두기'; b.setAttribute('aria-label', b.title); try { localStorage.setItem('navpin', on ? '1' : ''); } catch (e) {} };
+$('#navx').onclick = () => navPin(!document.body.classList.contains('navpin')); $('#navo').onclick = () => navPin(true);
+try { navPin(!!localStorage.getItem('navpin')); } catch (e) { navPin(false); }
+// 대메뉴 펼침 상태: 지금 영역은 늘 펼치고, 사람이 펼치거나 접은 것은 브라우저가 기억한다
+let NAVO = {}; try { NAVO = JSON.parse(localStorage.getItem('navopen') || '{}'); } catch (e) {}
+const navOpen = (k, sec) => k === sec ? NAVO[k] !== false || true : !!NAVO[k];
+$('#gnav').addEventListener('click', e => {
+  const b = e.target.closest('.tg'); if (!b) return;
+  const g = b.closest('.grp'), k = g.dataset.k, on = !g.classList.contains('open');
+  g.classList.toggle('open', on); b.setAttribute('aria-expanded', on); NAVO[k] = on;
+  try { localStorage.setItem('navopen', JSON.stringify(NAVO)); } catch (e) {}
+});
+// 쪽마다 맨 먼저 부른다: 띠를 비우고 위치를 적는다
+function crumb(parts){ BAND = {crumb: parts}; }
+document.addEventListener('keydown', e => { if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(e.target.tagName) && !e.metaKey && !e.ctrlKey){ e.preventDefault(); document.body.classList.add('navpeek'); requestAnimationFrame(() => $('#q').focus()); } });
+$('#q').addEventListener('blur', () => document.body.classList.remove('navpeek'));
+$('#sf').onsubmit = e => { e.preventDefault(); const v = $('#q').value.trim(); if (!v) return; location.hash = D.defs[v.toUpperCase()] ? '#/id/' + enc(v.toUpperCase()) : '#/search/' + enc(v); };
+// ───────── 목록 + 사이드 패널 (양식 Table + SidePanel) ─────────
+let LD = null; const DW = {sel: ''};
+function listView(el, opt){
+  LD = {...opt, el};
+  if (!opt.rows.length){ el.innerHTML = `<div class="card">${opt.tbar ? `<div class="tbar">${opt.tbar}</div>` : ''}${empty(opt.empty || '조건에 맞는 항목이 없습니다.', opt.emptyHelp ?? '필터 조건을 바꿔 보세요.')}</div>`; if (opt.bind) opt.bind(el); if (DW.sel) panel(''); return; }
+  el.innerHTML = table(opt.cols.map(c => `<th class="${c.cls || ''}" ${c.w ? `style="width:${c.w}"` : ''}>${c.h}</th>`).join(''),
+    opt.rows.map((i, n) => { const g = opt.group && opt.group(i), pg = n && opt.group ? opt.group(opt.rows[n - 1]) : null;
+      return (g && g !== pg ? `<tr class="grp scr"><td colspan="${opt.cols.length}"><b>${esc(g)}</b><span class="gcnt">${opt.rows.filter(x => opt.group(x) === g).length}건</span></td></tr>` : '')
+        + `<tr class="clk ${opt.dim && opt.dim(i) ? 'dim' : ''} ${opt.key(i) === DW.sel ? 'on' : ''}" data-k="${esc(opt.key(i))}" tabindex="0">${opt.cols.map(c => `<td class="${c.cls || ''}">${c.v(i)}</td>`).join('')}</tr>`; }).join(''), {tbar: opt.tbar});
+  const tb = el.querySelector('tbody');
+  tb.onclick = e => { if (e.target.closest('a')) return; const tr = e.target.closest('tr[data-k]'); if (tr) panel(tr.dataset.k); };
+  tb.onkeydown = e => { if (e.key === 'Enter'){ const tr = e.target.closest('tr[data-k]'); if (tr) panel(tr.dataset.k); } };
+  if (opt.bind) opt.bind(el);
+  if (DW.sel && !opt.rows.some(i => opt.key(i) === DW.sel)) panel(''); else if (DW.sel) panel(DW.sel);
+}
+// 상세 패널 값: 짧은 값은 위 칸 표로, 긴 글은 구획으로. `코드`는 고정폭 칩, 「개발:」 같은 머리말은 굵게, 「→」로 이은 절차는 번호 목록
+function pval(v){
+  let h = esc(String(v)).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/^((?:개발|기획|디자인|정책|QA)\s*:|\d{2}-\d{2} 판단안 —)\s*/, '<b class="pk">$1</b> ');
+  const parts = String(v).length > 140 ? h.split(/(?<=다\.)\s+(?=\S)/) : [h];
+  return parts.length > 2 ? `<ul class="pl">${parts.map(x => `<li>${x}</li>`).join('')}</ul>` : `<p>${parts.join(' ')}</p>`;
+}
+// 패널 칸: 분류(짧은 이름표 값)는 위 격자, 내용은 받은 순서 그대로 아래로. 글자 길이로 순서를 바꾸지 않는다
+const PMETA = new Set(['범주', '유형', '우선순위', '심각도', '화면', '관련 TC', '발견 차수', '확인 차수', '구분', '영역', '물을 곳', '단계', '종류', '화면 종류', '다시 돌릴 조건', '관련 미결정', '효과 · 비용', '담당', '상태']);
+function pfields(fs){
+  fs = fs.filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== '');
+  const meta = fs.filter(([a, v]) => PMETA.has(a) && String(v).length <= 40), body = fs.filter(f => !meta.includes(f));
+  const ex = body.find(([a]) => a === '기대'), ac = body.find(([a]) => a === '실제');
+  const sec = ([a, v]) => a === '재현 절차' && /→/.test(v) ? `<section class="pf"><h5>${a}</h5><ol class="steps2">${esc(v).split(/\s*→\s*/).map(x => `<li>${x}</li>`).join('')}</ol></section>` : `<section class="pf"><h5>${a}</h5>${pval(v)}</section>`;
+  return (meta.length ? `<dl class="pmeta">${meta.map(([a, v]) => `<div><dt>${a}</dt><dd>${pval(v).replace(/^<p>|<\/p>$/g, '')}</dd></div>`).join('')}</dl>` : '')
+    + body.filter(f => f !== ex && f !== ac && f[0] !== '근거' && f[0] !== '증거').map(sec).join('')
+    + (ex || ac ? `<div class="pcmp">${ex ? `<section class="pf ok"><h5>기대</h5>${pval(ex[1])}</section>` : ''}${ac ? `<section class="pf bad"><h5>실제</h5>${pval(ac[1])}</section>` : ''}</div>` : '')
+    + body.filter(f => f[0] === '근거' || f[0] === '증거').map(sec).join('');
+}
+// 사진 크게 보기: 화면 위에 띄우고 Esc · 바깥 누르기 · 닫기로 닫는다. 원본은 새 창으로
+function lightbox(src, cap){
+  // 사진 크게 보기: 확대 · 축소(단추 · 휠 · + − 0 키), 확대하면 끌어서 옮긴다. Esc · 바깥 누르기 · 닫기로 닫는다
+  let lb = $('#lbx');
+  if (!lb){
+    document.body.insertAdjacentHTML('beforeend', '<div id="lbx" class="lbx" role="dialog" aria-modal="true" aria-label="화면 사진" hidden><div class="lbv"><img alt="" draggable="false"></div><div class="lbb"><span class="lbcap mono"></span><span class="lbz"><button type="button" class="btn sm" data-z="-" aria-label="축소">−</button><b class="lbp">100%</b><button type="button" class="btn sm" data-z="+" aria-label="확대">+</button><button type="button" class="btn sm" data-z="0">맞춤</button></span><a class="btn sm" target="_blank" rel="noopener">원본 열기</a><button type="button" class="btn sm" data-z="x">닫기</button></div></div>');
+    lb = $('#lbx'); const v = lb.querySelector('.lbv'), im = v.querySelector('img'), st = lb.__st = {s: 1, x: 0, y: 0};
+    const draw = () => { im.style.transform = `translate(${st.x}px, ${st.y}px) scale(${st.s})`; lb.querySelector('.lbp').textContent = Math.round(st.s * 100) + '%'; v.classList.toggle('zoomed', st.s > 1); };
+    const zoom = (f, cx, cy) => { const n = Math.min(6, Math.max(1, st.s * f)); if (cx !== undefined){ const r = v.getBoundingClientRect(), ox = cx - r.left - r.width / 2, oy = cy - r.top - r.height / 2; st.x = ox - (ox - st.x) * n / st.s; st.y = oy - (oy - st.y) * n / st.s; } st.s = n; if (n === 1){ st.x = 0; st.y = 0; } draw(); };
+    lb.__reset = () => { st.s = 1; st.x = 0; st.y = 0; draw(); };
+    lb.onclick = e => { const b = e.target.closest('[data-z]'); if (b){ const z = b.dataset.z; if (z === 'x') lb.hidden = true; else if (z === '0') lb.__reset(); else zoom(z === '+' ? 1.25 : 0.8); return; } if (e.target === lb || e.target === v) lb.hidden = true; };
+    v.addEventListener('wheel', e => { e.preventDefault(); zoom(e.deltaY < 0 ? 1.15 : 1 / 1.15, e.clientX, e.clientY); }, {passive: false});
+    v.addEventListener('dblclick', e => { st.s > 1 ? lb.__reset() : zoom(2, e.clientX, e.clientY); });
+    v.addEventListener('pointerdown', e => { if (st.s <= 1) return; e.preventDefault(); const x0 = e.clientX - st.x, y0 = e.clientY - st.y; v.setPointerCapture(e.pointerId); v.classList.add('drag');
+      const mv = ev => { st.x = ev.clientX - x0; st.y = ev.clientY - y0; draw(); }, up = () => { v.removeEventListener('pointermove', mv); v.removeEventListener('pointerup', up); v.classList.remove('drag'); };
+      v.addEventListener('pointermove', mv); v.addEventListener('pointerup', up); });
+    document.addEventListener('keydown', e => { if (lb.hidden) return;
+      if (e.key === 'Escape'){ e.stopImmediatePropagation(); lb.hidden = true; }
+      else if (e.key === '+' || e.key === '='){ zoom(1.25); } else if (e.key === '-'){ zoom(0.8); } else if (e.key === '0'){ lb.__reset(); } }, true);
+  }
+  const im = lb.querySelector('img'); im.src = src; im.alt = cap + ' 화면 사진'; lb.querySelector('.lbcap').textContent = cap; lb.querySelector('a').href = src; lb.__reset(); lb.hidden = false; lb.querySelector('[data-z="x"]').focus();
+}
+
+// 패널 아래 「이전 · 다음」 줄: 손이 가는 아래쪽에 두고, 넘어갈 항목의 ID · 제목을 보인다. 키보드 ↑ ↓ 도 그대로
+function pfoot(n){
+  const it = i => { const r = LD.rows[i]; if (!r) return null; const d = LD.detail(r); return {k: d.key, t: d.title || ''}; };
+  const p = it(n - 1), x = it(n + 1);
+  const b = (o, dir, lab) => o ? `<button type="button" class="pf-${dir < 0 ? 'prev' : 'next'}" data-go="${dir}"><small>${lab}</small><span><b class="mono">${esc(o.k)}</b> ${esc(o.t)}</span></button>` : `<span class="pf-${dir < 0 ? 'prev' : 'next'} off"><small>${lab}</small><span class="mut">${dir < 0 ? '첫 항목' : '마지막 항목'}</span></span>`;
+  return `<div class="pfoot">${b(p, -1, '← 이전 (↑)')}${b(x, 1, '다음 (↓) →')}</div>`;
+}
+function panel(k){
+  const host = $('#sidehost'), i = LD && LD.rows.find(x => LD.key(x) === k);
+  DW.sel = i ? k : '';
+  document.body.classList.toggle('sopen', !!i);
+  if (LD) LD.el.querySelectorAll('tr[data-k]').forEach(tr => tr.classList.toggle('on', tr.dataset.k === DW.sel));
+  if (!i){ host.hidden = true; $('#pnl').innerHTML = ''; return; }
+  const n = LD.rows.indexOf(i), d = LD.detail(i);
+  host.hidden = false;
+  $('#pnl').innerHTML = `<div class="pdrag" title="끌어서 패널 폭 조절 · 두 번 누르면 넓게 · 다시 두 번 누르면 원래 폭"></div><div class="ph"><div class="t"><h4 class="pid">${esc(d.key)}</h4><span class="idc">${n + 1} / ${LD.rows.length}</span></div><span class="nav"><button class="ibtn" data-go="x" title="닫기 (Esc)"><svg class="ic"><use href="#i-close"/></svg></button></span></div>
+    <div class="pb">${d.head ? `<div class="btns">${d.head}</div>` : ''}${d.lead !== undefined ? d.lead : `<p class="plead">${esc(d.title || '-')}</p>`}${pfields(d.fields || [])}${d.html || ''}${d.img ? `<section class="pf"><h5>화면 사진</h5><button type="button" class="pimg" data-img="${d.img}" aria-label="화면 사진 크게 보기"><img src="${d.img}" alt="${esc(d.key)} 화면 사진" loading="lazy"><span class="pzoom">크게 보기</span></button></section>` : ''}${d.links ? `<div class="btns">${d.links}</div>` : ''}${d.foot ? `<span class="help" style="margin:0">${d.foot}</span>` : ''}</div>${pfoot(n)}`;
+  linkify($('#pnl .pb'));
+  const pi = $('#pnl .pimg'); if (pi) pi.onclick = () => lightbox(pi.dataset.img, d.key);
+  $('#pnl .pdrag').ondblclick = e => { if (!e.target.closest('button')) panelWide(); };
+  $('#pnl .pdrag').onpointerdown = e => { if (e.target.closest('button')) return; e.preventDefault(); const el = e.currentTarget; el.setPointerCapture(e.pointerId); document.body.classList.add('pdragging');
+    el.onpointermove = m => { const w = Math.max(360, Math.min(innerWidth * 0.85, innerWidth - m.clientX)); document.body.classList.remove('pwide'); document.body.style.setProperty('--panel-w', Math.round(w) + 'px'); };
+    el.onpointerup = () => { el.onpointermove = el.onpointerup = null; document.body.classList.remove('pdragging'); try { localStorage.setItem('pw', document.body.style.getPropertyValue('--panel-w')); localStorage.setItem('pwide', ''); } catch (x) {} }; };
+  $('#pnl .pfoot').onclick = e => { const b = e.target.closest('[data-go]'); if (b) step(+b.dataset.go); };
+  $('#pnl .ph').onclick = e => { const b = e.target.closest('[data-go]'); if (!b) return; b.dataset.go === 'x' ? panel('') : b.dataset.go === 'w' ? panelWide() : step(+b.dataset.go); };
+  const tr = LD.el.querySelector(`tr[data-k="${CSS.escape(DW.sel)}"]`); if (tr) tr.scrollIntoView({block: 'nearest'});
+}
+// 상세 패널 넓게 보기: 화면 폭의 70%까지 넓힌다. 고른 상태는 브라우저가 기억한다
+function panelWide(on){
+  on = on === undefined ? !document.body.classList.contains('pwide') : on;
+  document.body.classList.toggle('pwide', on); document.body.style.removeProperty('--panel-w'); try { localStorage.setItem('pw', ''); } catch (e) {}
+  const pb = $('#pnl .pwbtn'); if (pb){ pb.setAttribute('aria-label', on ? '패널 원래 폭으로' : '패널 넓게 보기'); pb.classList.toggle('on', on); }
+  
+  try { localStorage.setItem('pwide', on ? '1' : ''); } catch (e) {}
+}
+try { if (localStorage.getItem('pwide')) document.body.classList.add('pwide'); const pw = localStorage.getItem('pw'); if (pw) document.body.style.setProperty('--panel-w', pw); } catch (e) {}
+function step(dir){ if (!LD) return; const n = LD.rows.findIndex(x => LD.key(x) === DW.sel); const t = LD.rows[n + dir]; if (t) panel(LD.key(t)); }
+document.addEventListener('keydown', e => {
+  if (!DW.sel || $('#sidehost').hidden || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if (e.key === 'Escape') panel('');
+  else if (e.key === 'ArrowDown'){ e.preventDefault(); step(1); }
+  else if (e.key === 'ArrowUp'){ e.preventDefault(); step(-1); }
+});
+
+// ───────── 홈 ─────────
+// 홈 「무엇이 바뀌었나」: 커밋 메시지 대신 문서 정보의 수정일 · 품질 결과 날짜로 바뀐 것을 모은다(포털 · 도구 수정은 빠진다)
+function changes(){
+  const norm = d => { const m = String(d || '').match(/(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : ''; };
+  const out = [];
+  D.docs.filter(d => d.kind === 'plan' || d.kind === 'policy').forEach(d => { const u = norm(d.meta.updated); if (u) out.push({d: u, t: d.kind === 'plan' ? `${d.group} ${d.title}` : d.title, k: d.kind === 'plan' ? '기획 문서' : '공통 정책', h: d.kind === 'plan' ? `#/plan/${(planOf(d.id) || {}).key}/${d.id.split('/')[1]}` : `#/doc/${enc(d.id)}`, s: d.meta.status || ''}); });
+  D.plans.filter(p => p.qa_latest).forEach(p => out.push({d: p.qs && p.qs['만든 시각'] ? p.qs['만든 시각'].slice(0, 10) : qday(p.qa_latest.day), t: `${p.title} 품질 검사 ${p.qs ? p.qs['차수'] : p.qa_latest.round}`, k: '품질 결과', h: `#/plan/${p.key}/qa`, s: p.qs && p.qs['초안'] ? '초안' : ''}));
+  return out.sort((a, b) => b.d.localeCompare(a.d)).slice(0, 8);
+}
+// 홈 「내 할 일」: 역할을 고르면 그 역할이 먼저 볼 목록만 보인다. 고른 역할은 브라우저가 기억한다
+function roleBox(role){
+  const row = (h, id, t, sub, n) => `<li><div><a class="ttl" href="${h}">${esc(t)}</a><small><span class="mono">${esc(id)}</span>${sub ? ' · ' + sub : ''}</small></div>${n !== undefined ? `<b title="정하면 다시 돌릴 수 있는 케이스 수">${n}</b>` : ''}</li>`;
+  const col = (t, items, more, emp) => `<div class="card"><div class="hd"><h2>${t}</h2>${more ? `<span style="margin-left:auto"><a href="${more[1]}">${more[0]}</a></span>` : ''}</div><div class="bd">${items.length ? `<ol class="qlist">${items.join('')}</ol>` : `<p class="mut" style="margin:0">${emp}</p>`}</div></div>`;
+  if (role === '개발'){
+    const dv = D.issues.filter(i => i.open && i.kind === 'defect' && own(i.owner) === '개발').sort((a, b) => ixOf(PR, a.pri) - ixOf(PR, b.pri) || ixOf(SV, a.sev) - ixOf(SV, b.sev)).slice(0, 6);
+    const gp = D.open.filter(o => o.kind === 'gap').slice(0, 6);
+    return `<div class="grid2">${col('먼저 고칠 결함', dv.map(i => row(`#/issue/${enc(i.id)}`, i.id, i.title, [planBy(i.plan).title, i.sev, i.pri].filter(Boolean).map(esc).join(' · '))), ['개발 결함 전체', '#/issues/all/defect/개발'], '고칠 결함이 없습니다.')}${col('정책과 다른 코드', gp.map(o => row('#/open/gap', o.id, o.label, esc(o.need || '').slice(0, 80))), ['전체 보기', '#/open/gap'], '정책과 다른 코드가 없습니다.')}</div><p class="help">결함 추적은 지라로 옮길 예정입니다(확정 전). 포털 목록은 읽기 전용입니다.</p>`;
+  }
+  if (role === '정책'){
+    const by = k => D.open.filter(ogF(k)).slice(0, 6);
+    return `<div class="grid2">${col('공통 정책 미확정', by('all').map(o => row(`#/open/all`, o.id, o.label, esc(docName(o)))), ['정책 미결 전체', '#/open/all'], '미확정 규칙이 없습니다.')}${col('담당자 확인 대기 · 정책 · 코드 불일치', [...by('recheck').slice(0, 3), ...by('gap').slice(0, 3)].map(o => row(`#/open/${o.kind === 'gap' ? 'gap' : 'recheck'}`, o.id, o.label, esc(KIND[o.kind] || ''))), ['정책 미결 전체', '#/open/all'], '확인할 것이 없습니다.')}</div>`;
+  }
+  if (role === '디자인'){
+    const ds = D.issues.filter(i => i.open && i.kind === 'defect' && /디자인/.test(i.cat || '')).slice(0, 8);
+    const ux = D.issues.filter(i => i.open && i.kind === 'ux').slice(0, 6);
+    return `<div class="grid2">${col('디자인 결함', ds.map(i => row(`#/issue/${enc(i.id)}`, i.id, i.title, [planBy(i.plan).title, i.cat].filter(Boolean).map(esc).join(' · '))), ['결함 전체', '#/issues/all/defect'], '디자인 결함이 없습니다.')}${col('개선 제안', ux.map(i => row(`#/issue/${enc(i.id)}`, i.id, i.title, esc(planBy(i.plan).title))), ['개선 제안 전체', '#/issues/all/ux'], '개선 제안이 없습니다.')}</div>`;
+  }
+  const qd = D.open.filter(o => o.kind === 'qa').slice(0, 6), pd = D.issues.filter(i => i.open && isPlanDef(i)).slice(0, 6);
+  return `<div class="grid2">${col('품질 검사를 막는 결정', qd.map(o => row(`#/issue/${enc(o.id)}`, o.id, o.label, esc(planBy(o.plan).title), o.unblocks ? `풀리는 케이스 ${o.unblocks}` : undefined)), ['결정할 것 전체', '#/open/qa'], '결정할 것이 없습니다.')}${col('기획서를 고칠 결함', pd.map(i => row(`#/issue/${enc(i.id)}`, i.id, i.title, [planBy(i.plan).title, i.cat].filter(Boolean).map(esc).join(' · '))), ['기획 · 디자인 결함 전체', '#/issues/all/defect/!개발'], '고칠 결함이 없습니다.')}</div>`;
+}
+function vHome(){
+  crumb([]);
+  const nAppr = D.plans.filter(p => stageOf(p) >= 3).length, nQa = D.plans.filter(p => stageOf(p) === 4).length;
+  const devAll = D.issues.filter(i => i.open && i.kind === 'defect' && own(i.owner) === '개발').sort((a, b) => ixOf(SV, a.sev) - ixOf(SV, b.sev) || ixOf(PR, a.pri) - ixOf(PR, b.pri));
+  const devHi = devAll.filter(i => ixOf(SV, i.sev) <= 1).length;
+  const bd = D.plans.flatMap(p => (qsN(p.qs || {}, '결정 필요.먼저 정할 것') || []).filter(x => x.unblocks)), blockDec = bd.length ? {n: bd.length, cases: bd.reduce((a, x) => a + x.unblocks, 0)} : null;
+  const dec = D.issues.filter(i => i.open && i.kind === 'decision').length, oq = D.open.filter(o => o.kind === 'oq').length, planDef = D.issues.filter(i => i.open && isPlanDef(i)).length;
+  const byStage = STAGES.map(() => []); D.plans.forEach(p => byStage[stageOf(p)].push(p));
+  const badge = p => { const s = planState(p); return s.dec.length ? `<span class="bdg warn">결정 필요 ${s.dec.length}</span>` : s.dev.length ? `<span class="bdg bad">개발 결함 ${s.dev.length}</span>` : s.op ? `<span class="bdg">미결정 ${s.op}</span>` : ''; };
+  const pc = {}; D.issues.filter(i => i.open && isPlanDef(i)).forEach(i => { const k = i.cat || '기타'; pc[k] = (pc[k] || 0) + 1; });
+  const planCats = Object.entries(pc).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => `${esc(k)} ${n}`).join(' · ');
+  page.className = 'wrap';
+  page.innerHTML = head({title: '기획 · 품질 현황', lift: true})
+    + `<p class="lead">저장소 확정본(main)을 머지할 때마다 모아 보여 줍니다. 포털에서는 고칠 수 없고, 고칠 내용은 GitHub 저장소에 PR로 올립니다. 처음이면 <a href="#/help">포털 쓰는 법</a>부터 봅니다. <span class="mono">기준 main ${esc(D.commit)} · ${esc(D.built)}</span></p>`
+    + sum([['품질 검사를 막는 결정', dec, '#/open/qa', dec ? 'w' : 'o', '건', blockDec ? `먼저 결정할 것 ${blockDec.n}건 · 정하면 케이스 ${blockDec.cases}개를 다시 돌림` : '품질 검사에서 나온 결정 필요'],
+           ['정책정의서 미결정', oq, '#/open/oq', oq ? 'plan' : 'o', '건', '기획마다 정책정의서에 남은 미결정'], ['기획 · 디자인 결함', planDef, '#/issues/all/defect/!개발', planDef ? 'plan' : 'o', '건', planCats],
+           ['개발 결함', qaCount('').dev, '#/issues/all/defect/개발', devAll.length ? 'dev' : 'o', '건', devHi ? `중요 이상 ${devHi}건` : ''], ['확정 · 품질 검사 단계 기획', `${nAppr}<em>/ ${D.plans.length}개</em>`, '#/plans', 'p', '', nQa ? `품질 검사 중 ${nQa}개` : '']])
+    + `<div class="sec"><h2>내 할 일</h2><span class="seg" id="role">${[['기획', '기획'], ['개발', '개발'], ['디자인', '디자인'], ['정책', '정책 담당']].map(([k, t]) => `<button type="button" data-v="${k}">${t}</button>`).join('')}</span></div><div id="roleb"></div>`
+    + `<div class="sec"><h2>기획 단계 현황</h2><small>${D.plans.length}개 · 이름을 누르면 기획 상세를 엽니다</small></div>`
+    + `<div class="stageboard">${STAGES.map(([t, d], k) => `<div class="${byStage[k].length ? (k === 4 ? 'last' : '') : 'zero'}"><div class="h"><span class="k">0${k + 1}</span><h3>${t}</h3><b>${byStage[k].length}</b></div><p>${d}</p><ul>${byStage[k].map(p => `<li><a class="ttl" href="#/plan/${p.key}">${esc(p.title)}</a>${badge(p)}</li>`).join('')}</ul></div>`).join('')}</div>`
+    + `<div class="grid32"><div><div class="sec"><h2>개발 우선 결함</h2><small>${devAll.length}건 중 심각도가 높은 ${Math.min(4, devAll.length)}건</small><a href="#/issues/all/defect/개발">전체 보기</a></div>
+        <div class="card">${devAll.length ? `<div class="tscroll"><table class="tb"><thead><tr><th style="width:130px">ID</th><th>제목</th><th style="width:90px">심각도</th></tr></thead><tbody>${devAll.slice(0, 4).map(i => `<tr><td class="id">${esc(i.id)}</td><td><a class="ttl" href="#/issue/${enc(i.id)}">${esc(i.title)}</a><div class="sub">${esc(planBy(i.plan).title)}</div></td><td class="nw">${sev(i.sev)}</td></tr>`).join('')}</tbody></table></div>` : empty('개발 미해결 결함이 없습니다.')}</div></div>
+      <div><div class="sec"><h2>무엇이 바뀌었나</h2><small>기획 문서 · 공통 정책 · 품질 결과</small><a href="${D.repo}/commits/main" target="_blank" rel="noopener">GitHub 기록</a></div>
+        <div class="card"><ul class="feed chg">${changes().map(c => `<li><i></i><div><a class="ttl" href="${c.h}">${esc(c.t)}</a><div class="t"><span class="bdg">${c.k}</span> ${esc(c.d)}${c.s ? ' · ' + esc(c.s) : ''}</div></div></li>`).join('') || '<li><div class="mut">바뀐 문서가 없습니다.</div></li>'}</ul></div>
+      </div></div>`;
+  let role = '기획'; try { role = localStorage.getItem('role') || '기획'; } catch (e) {}
+  const drawRole = () => { $('#role').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === role)); $('#roleb').innerHTML = roleBox(role); };
+  $('#role').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; role = b.dataset.v; try { localStorage.setItem('role', role); } catch (x) {} drawRole(); };
+  drawRole();
+}
+// ───────── 기획 ─────────
+function planCard(p){
+  const s = planState(p);
+  const num = (n, t, h, c) => n ? `<a href="${h}" class="${c}"><b>${n}</b><span>${t}</span></a>` : `<div class="z"><b>0</b><span>${t}</span></div>`;
+  const qa = s.L && s.last ? (() => { const v = verdict(s.last.count); return `<div class="qline"><span>품질 ${esc(s.L.round)} · ${qday(s.L.day)} · 실행 ${v.run}/${v.tot}${v.rate !== null ? ` · <b>통과율 ${v.rate}%</b>` : ''}</span>${vstk(s.last.count)}</div>`; })() : '';
+  return `<article class="pcard"><div class="h"><div><a href="#/plan/${p.key}">${esc(p.title)}</a><div class="sub"><span class="mono">${p.code}</span> · ${esc(p.menu)}</div></div>${stBdg(p.status)}</div>
+    ${steps(p)}<div class="nums">${num(s.op, '미결정', `#/plan/${p.key}/open`, '')}${num(s.dec.length, '결정 필요', `#/plan/${p.key}/open`, 'w')}${num(s.dev.length, '개발 결함', `#/issues/${p.key}/defect/개발`, 'd')}</div>${qa}
+    ${s.next[0] ? `<div class="next">${who(s.next[0][0])}<span>${esc(s.next[0][1])}</span>${s.next.length > 1 ? `<a href="#/plan/${p.key}">할 일 ${s.next.length - 1}개 더</a>` : ''}</div>` : ''}</article>`;
+}
+function vPlans(st){
+  crumb([['기획']]);
+  page.className = 'wrap';
+  const k = /^\d$/.test(st || '') && STAGES[+st] ? +st : -1, n = i => D.plans.filter(p => stageOf(p) === i).length;
+  const tabs = [['all', '전체', '#/plans', D.plans.length], ...STAGES.map(([t], i) => [String(i), t, `#/plans/${i}`, n(i) || '0']).map(x => x)];
+  const ps = D.plans.filter(p => k < 0 || stageOf(p) === k).sort((a, b) => stageOf(b) - stageOf(a));
+  page.innerHTML = head({title: '기획', tabs, on: k < 0 ? 'all' : String(k)}) + `<p class="lead">기획마다 단계 · 미결정 · 품질 판정 · 다음 할 일을 보여 줍니다. 품질 검사 단계에 가까운 기획부터 놓았습니다.</p>`
+    + (ps.length ? `<div class="pcards">${ps.map(planCard).join('')}</div>` : empty(`「${STAGES[k][0]}」 단계인 기획이 없습니다.`, `단계 기준: ${STAGES[k][1]}`));
+}
+function vPlan(key, tab){
+  const p = D.plans.find(x => x.key === key); if (!p) return vPlans();
+  const openMine = D.open.filter(o => p.docs.includes(o.doc) || o.plan === p.key), s = planState(p);
+  // 탭은 늘 같은 열 개다. 문서 · 결과가 없는 탭도 두고, 열면 「없습니다」와 채우는 법을 보인다
+  const DOCT = [['spec', '기능정의서', 'spec.md', 'GD-04'], ['policy', '정책정의서', 'policy.md', 'GD-05'], ['screens', '화면 목록', 'screens/index.md', 'GD-06']];
+  const tabs = [['overview', '개요'], ['screen', '기획서 화면']];
+  DOCT.forEach(([k, t]) => tabs.push([k, t]));
+  p.docs.forEach(id => { const k = id.split('/')[1]; if (!DOCT.some(x => x[0] === k)) tabs.push([k, byDoc[id].title]); });
+  tabs.push(['common', '따르는 공통 정책'], ['open', '결정할 것', openMine.length]);
+  tabs.push(['qa', '품질', (p.qa || []).length ? D.issues.filter(i => i.plan === p.key && i.open && i.kind !== 'decision' && !DECIDE_CATS.includes(i.cat)).length : '']);
+  tabs.push(['files', '내려받기 · 원본']);
+  tab = tab || tabs[0][0];
+  crumb([['기획', '#/plans', '기획 목록'], [esc(p.title)]]);
+  const doc = byDoc[p.code + '/' + tab];
+  const li = ([w, t]) => `<li>${who(w)}<span>${esc(t)}</span></li>`;
+  const todo = `<div class="rbox"><h3>할 일<small>${s.next.length}개</small></h3>${s.next.length ? `<ul class="todo">${s.next.slice(0, 2).map(li).join('')}</ul>${s.next.length > 2 ? `<details class="more"><summary>할 일 ${s.next.length - 2}개 더 보기</summary><ul class="todo">${s.next.slice(2).map(li).join('')}</ul></details>` : ''}` : '<p class="mut" style="margin:0">할 일이 없습니다.</p>'}</div>`;
+  const qbox = s.L && s.last ? (() => { const v = verdict(s.last.count); return `<div class="rbox"><h3>최신 품질 검사</h3><div class="qbig"><b>${v.rate !== null ? v.rate + '%' : '-'}</b><span>통과율 · ${esc(s.L.round)} · ${qday(s.L.day)}</span></div>${vstk(s.last.count)}${vleg()}<a class="btn sm" href="#/plan/${p.key}/qa">차수별 결과 보기</a></div>`; })() : '';
+  const missDoc = DOCT.find(x => x[0] === tab && !doc), noQa = tab === 'qa' && !(p.qa || []).length, noScr = tab === 'screen' && !p.screen && !p.screen_url;
+  const reading = !!doc, single = tab === 'screen' || tab === 'common' || tab === 'qa' || tab === 'overview' || !!missDoc;
+  page.className = 'wrap';
+  page.innerHTML = head({title: esc(p.title), badge: stBdg(p.status), meta: `<span class="mono">${p.code}</span><span>${esc(p.menu)}</span>${p.owner ? `<span>담당 ${esc(p.owner)}</span>` : ''}<a href="${D.repo}/tree/main/${p.dir}" target="_blank" rel="noopener">원본 ↗</a>`,
+      tabs: tabs.map(([k, t, n]) => [k, t, `#/plan/${key}/${k}`, n || '']), on: tab})
+    + (reading || single ? '<div id="tab"></div>' : `<div class="grid32"><div id="tab"></div><div class="rail">${todo}${tab === 'open' ? qbox : ''}</div></div>`);
+  const el = $('#tab');
+  if (missDoc){
+    el.innerHTML = empty(`이 기획에는 아직 ${missDoc[1]}가 없습니다.`, `기획 폴더에 <span class="mono">${missDoc[2]}</span> 를 올리면 여기 보입니다. 작성 기준: <a href="#/doc/${missDoc[3]}">${missDoc[3]}</a>`);
+  } else if (noQa){
+    el.innerHTML = empty('아직 품질 검사를 하지 않았습니다.', `품질 검사를 하면 차수별 결과 · 결함 · 결정 필요 · 화면 문구가 여기 보입니다. 기준: ${gd09()}`);
+  } else if (noScr){
+    el.innerHTML = empty('이 기획에는 아직 기획서 화면이 없습니다.', `기획 폴더 <span class="mono">screens/prototype.html</span> 를 올리면 여기 보입니다. 작성 안내: <a href="#/doc/GD-07">GD-07</a>`);
+  } else if (tab === 'overview'){
+    const qd = openMine.filter(o => o.kind === 'qa'), oq = openMine.filter(o => o.kind === 'oq'), ub = qd.reduce((a, o) => a + (o.unblocks || 0), 0);
+    const go = (t, n, h, sub, w) => `<a class="ovn ${w ? 'w' : ''}" href="${h}"><small>${t}</small><b>${n}<em>건</em></b>${sub ? `<span>${sub}</span>` : ''}</a>`;
+    const docs = tabs.filter(([k]) => !['overview', 'open', 'qa'].includes(k));
+    el.innerHTML = `<div class="ovw"><div class="ovw-main">
+      ${card('지금 단계', steps(p), {small: STAGES[stageOf(p)][1]})}
+      ${card('할 일', todoList(s), {small: `${s.next.length}개`})}
+      ${card('결정할 것', `<div class="ovns">${go('품질 검사를 막는 결정', qd.length, `#/plan/${key}/open`, ub ? `정하면 케이스 ${ub}개를 다시 돌림` : '품질 검사에서 나온 것', qd.length)}${go('정책정의서 미결정', oq.length, `#/plan/${key}/open`, '정책정의서 미결정 항목')}</div>`)}
+      ${(p.qa || []).length ? (p.qs ? qsHead(p, `#/plan/${key}/qa`).replace('class="card qsh"', 'class="card qsh ovq"') : card('최신 품질 검사', qaLatest(p) || '-', {right: `<a href="#/plan/${key}/qa">품질 자세히 보기</a>`})) : card('품질 검사', empty('아직 품질 검사 기록이 없습니다.', '기획서가 확정되면 0차 검사를 요청합니다.'))}
+      ${uiCard(p)}
+    </div><aside class="ovw-side">
+      ${card('문서', `<ul class="ovdocs">${docs.map(([k, t]) => `<li><a href="#/plan/${key}/${k}">${esc(t)}</a></li>`).join('')}<li><a href="${D.repo}/tree/main/${p.dir}" target="_blank" rel="noopener">GitHub 원본 폴더</a></li></ul>`)}
+    </aside></div>`;
+  } else if (tab === 'screen'){
+    const orig = p.screen_url ? `<a class="btn sm" href="${p.screen_url}" target="_blank" rel="noopener">아티팩트에서 보기</a>` : '';
+    if (p.broken && p.broken.length){
+      el.innerHTML = `<div class="warnbox"><b>기획서를 포털에서 열 수 없습니다.</b> 기획서가 저장소에 없는 파일을 불러오므로 화면이 깨집니다. ${orig ? '아티팩트 원본에서 봅니다.' : '아티팩트 주소가 등록되지 않았습니다. 화면 목록 문서 정보의 “artifact” 칸에 주소를 적습니다.'}</div><div class="btns" style="margin-top:12px">${orig}<a class="btn sm" href="${p.screen}" target="_blank" rel="noopener">새 창에서 열기</a></div>`;
+    } else {
+      el.innerHTML = `<div class="btns" style="margin-bottom:12px;align-items:center"><a class="btn sm" href="${p.screen}" target="_blank" rel="noopener">새 창에서 열기</a>${orig}<span class="help" style="margin:0">기획서 HTML 그대로입니다. 버튼 · 탭 · 튜토리얼이 동작합니다.</span></div><iframe class="frame" src="${p.screen}" title="${esc(p.title)} 기획서"></iframe>`;
+    }
+  } else if (doc){
+    const m = doc.meta || {}, dt = DOCT.find(x => x[0] === tab);
+    renderDoc(doc, el);
+    el.insertAdjacentHTML('afterbegin', `<div class="dochead"><b>${esc(dt ? dt[1] : doc.title)}</b>${stBdg(m.status)}<span class="mono">${esc(doc.path.split('/').slice(-2).join('/'))}</span>${m.version ? `<span>버전 ${esc(m.version)}</span>` : ''}${m.updated ? `<span>수정 ${esc(m.updated)}</span>` : ''}${m.owner && m.owner !== '미지정' ? `<span>담당 ${esc(m.owner)}</span>` : ''}${dt ? `<a href="#/doc/${dt[3]}">작성 기준 ${dt[3]}</a>` : ''}<a href="${D.repo}/tree/main/${doc.path}" target="_blank" rel="noopener">원본 ↗</a></div>`);
+  } else if (tab === 'common'){
+    const used = {};
+    p.docs.forEach(did => Object.entries(D.refs).forEach(([id, rs]) => {
+      const def = D.defs[id]; if (!def || byDoc[def.doc]?.kind !== 'policy') return;
+      rs.filter(r => r.doc === did).forEach(r => { (used[def.doc] = used[def.doc] || {}); (used[def.doc][id] = used[def.doc][id] || new Set()).add(r.where); });
+    }));
+    const ks = Object.keys(used);
+    el.innerHTML = ks.length ? `<p class="help" style="margin:0 0 12px">기획 문서(기능정의서 · 정책정의서 · 화면 목록)가 가리키는 공통 정책 규칙입니다. 문서가 바뀌면 다시 모읍니다.</p><div class="stack">` + ks.map(did => card(`<a class="ttl" href="#/doc/${enc(did)}">${esc(byDoc[did].title)}</a>`, `<div class="tscroll"><table class="tb"><thead><tr><th style="width:130px">규칙</th><th style="width:110px">종류</th><th>내용</th><th>쓰인 곳</th></tr></thead><tbody>${Object.entries(used[did]).map(([id, w]) => `<tr><td class="id"><a class="rid" href="${idHref(id)}">${id}</a></td><td class="nw">${KIND[D.defs[id].kind] || ''}</td><td>${esc(D.defs[id].label)}</td><td>${[...w].map(esc).join(' · ')}</td></tr>`).join('')}</tbody></table></div>`, {raw: true, small: `${did} · 규칙 ${Object.keys(used[did]).length}개`, right: stBdg(byDoc[did].meta.status)})).join('') + '</div>'
+      : empty('기획 문서가 가리키는 공통 정책 규칙 ID가 없습니다.', '정책정의서 1.2 “따르는 공통 정책”에 규칙 ID를 적으면 채워집니다.');
+  } else if (tab === 'open'){
+    const OGN = {qa: '품질 검사를 막는 결정', oq: '정책정의서 미결정'}, og = o => OGN[o.kind] || '그 밖';
+    const rows = [...openMine].sort((a, b) => Object.keys(OGN).indexOf(a.kind) - Object.keys(OGN).indexOf(b.kind) || (b.unblocks || 0) - (a.unblocks || 0));
+    el.innerHTML = `<div id="olist2"></div>`;
+    listView($('#olist2'), {...openList(rows, false, `<span class="cnt">${Object.entries(OGN).map(([k, t]) => `${t} ${openMine.filter(o => o.kind === k).length}건`).join(' · ')}</span>`), group: og});
+  } else if (tab === 'qa'){
+    el.innerHTML = (p.qs ? '' : `<div style="margin-bottom:12px">${qaLatest(p)}</div>`) + qsHead(p) + qaTiles(p.key, !!p.qs) + qsNext(p) + `<div class="grid2" style="margin-bottom:16px">${roundCard(p)}${catCard(p.key)}</div>` + uiCard(p) + `<div class="stack">${qaRounds(p)}</div>`;
+    if (0) el.innerHTML += `<div class="btns" style="margin-top:12px"><a class="btn sm" href="#/plan/${p.key}/qa">차수별 결과 보기</a><a class="btn sm" href="#/issues/${p.key}">품질 이슈 보기</a></div>`;
+  } else {
+    const dl = (p.downloads || []).map(n => `<a class="btn sm" href="plans/${p.key}/downloads/${enc(n)}" download>${esc(n)}</a>`).join('');
+    el.innerHTML = `<div class="stack">${dl ? card('내려받기 · 사본', `<div class="btns">${dl}</div><span class="help">md에서 만든 사본입니다. 사본은 고치지 않습니다. 고칠 내용은 저장소에 PR로 올립니다.</span>`) : card('내려받기 · 사본', empty('md 에서 만든 엑셀 · 워드 사본이 없습니다.', 'Claude 에게 「제출용으로 뽑아 줘」라고 하면 만들 수 있습니다(저장소에 넣지 않음).'))}
+      ${card('원본', `<div class="tscroll"><table class="tb"><thead><tr><th>파일</th><th>내용</th></tr></thead><tbody>${p.files.map(f => `<tr><td><a class="ttl mono" href="${D.repo}/tree/main/${f.path}" target="_blank" rel="noopener">${esc(f.path)}</a></td><td>${esc(f.what)}</td></tr>`).join('')}</tbody></table></div>`, {raw: true, small: 'GitHub 저장소 파일 · 고칠 때는 표의 파일을 고쳐 PR로 올립니다'})}</div>`;
+  }
+}
+
+// ───────── 문서 · 목록 ─────────
+function vDoc(id, target){
+  const d = byDoc[id]; if (!d) return vHome();
+  const p = planOf(id);
+  if (p){ location.replace(`#/plan/${p.key}/${id.split('/')[1]}`); if (target) setTimeout(() => jump(target), 50); return; }
+  const m = d.meta, src = `<a href="${D.repo}/tree/main/${d.path}" target="_blank" rel="noopener">원본 ↗</a>`;
+  page.className = 'wrap'; page.innerHTML = '<div id="d"></div>';
+  let rail = '';
+  if (d.kind === 'guide' || d.kind === 'review'){
+    crumb(d.kind === 'guide' ? (d.id === 'GD-09' ? [['품질', '#/qa', '품질 현황'], [esc(d.title)]] : [['가이드', '#/guides', '가이드 목록'], [esc(d.title)]]) : [['공통 정책', '#/policies'], ['검토 항목'], [esc(d.title)]]);
+    head({title: esc(d.title), meta: `<span class="mono">${esc(d.id)}</span><span class="mono">${esc(d.path)}</span>${src}`});
+  } else {
+    crumb([['공통 정책', '#/policies', '공통 정책 목록'], [esc(d.group), '#/policies', '공통 정책 목록'], [esc(d.title)]]);
+    const rl = Object.entries(D.defs).filter(([, v]) => v.doc === d.id && v.kind === 'rule').map(([k]) => k), und = D.open.filter(o => o.doc === d.id && (o.kind === 'open' || o.kind === 'draft'));
+    const ps = {}; rl.forEach(rid => (D.refs[rid] || []).forEach(r => { const pl = planOf(r.doc); if (pl) ps[pl.key] = (ps[pl.key] || 0) + 1; }));
+    const pk = Object.entries(ps).sort((a, b) => b[1] - a[1]);
+    const rel = String(m.related || '').replace(/[\[\]]/g, '').split(',').map(x => x.trim()).filter(x => byDoc[x]);
+    head({title: esc(d.title), badge: stBdg(m.status), meta: `<span class="mono">${d.id}</span>${m.version ? `<span>버전 ${esc(m.version)}</span>` : ''}<span>수정 ${esc(m.updated || '-')}</span>${m.owner && m.owner !== '미지정' ? `<span>담당 ${esc(m.owner)}</span>` : ''}<span>규칙 ${rl.length}개${und.length ? ` · 미확정 ${und.length}건` : ''} · 따르는 기획 ${pk.length}개</span>${src}`});
+    rail = `<div class="rbox"><h3>이 정책을 참조하는 기획<small>참조 횟수</small></h3>${pk.length ? pk.map(([k, n]) => `<a class="kv" href="#/plan/${k}/common"><span>${esc(planBy(k).title)}</span><b>${n}</b></a>`).join('') : '<span class="mut">참조하는 기획이 없습니다.</span>'}</div>`
+      + (rel.length ? `<div class="rbox"><h3>관련 정책</h3><div class="chips">${rel.map(x => `<a class="bdg" href="#/doc/${enc(x)}" title="${esc(byDoc[x].title)}">${esc(x)}</a>`).join('')}</div></div>` : '')
+      + `<div class="rbox quiet"><span class="help" style="margin:0">점선 밑줄 ID를 누르면 그 규칙으로 갑니다. “따르는 기획 n”을 누르면 그 규칙을 가리키는 곳을 모두 봅니다. 노란 구획은 미확정입니다.</span></div>`;
+  }
+  renderDoc(d, $('#d'), rail);
+  if (target) jump(target);
+}
+function jump(target){ const r = document.getElementById('r-' + target); if (!r) return; r.classList.add('target'); r.scrollIntoView({block: 'center'}); }
+function vPolicies(g){
+  crumb([['공통 정책']]);
+  const pol = D.docs.filter(d => d.kind === 'policy');
+  const groups = {}; pol.sort((a, b) => a.order - b.order || a.title.localeCompare(b.title)).forEach(d => (groups[d.group] = groups[d.group] || []).push(d));
+  const rules = id => Object.values(D.defs).filter(v => v.doc === id && v.kind === 'rule').length;
+  const undec = id => D.open.filter(o => o.doc === id && (o.kind === 'open' || o.kind === 'draft')).length;
+  const plansOf = id => { const ps = new Set(); Object.entries(D.refs).forEach(([rid, rs]) => { if (D.defs[rid] && D.defs[rid].doc === id) rs.forEach(r => { const pl = planOf(r.doc); if (pl) ps.add(pl.key); }); }); return ps.size; };
+  const nRule = pol.reduce((a, d) => a + rules(d.id), 0), nUnd = pol.reduce((a, d) => a + undec(d.id), 0);
+  const top = pol.map(d => [d, undec(d.id)]).filter(x => x[1]).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const rv = D.docs.filter(d => d.kind === 'review');
+  page.className = 'wrap';
+  page.innerHTML = pgtabs('공통 정책') + `<p class="lead">두 화면 이상에 쓰는 규칙입니다. 기획서는 규칙 ID만 가리키고 규칙을 다시 쓰지 않습니다.</p>`
+    + sum([['공통 정책 문서', pol.length, '', '', '개'], ['규칙', nRule, '', '', '개'], ['미확정', nUnd, '#/open/all', nUnd ? 'w' : 'o', '건'], ['논의 필요 검토 문서', rv.length, rv.length ? '#/doc/' + enc(rv[0].id) : '#/policies', rv.length ? 'w' : 'o', '개']])
+    + `<div class="grid2" style="margin-bottom:16px">${top.length ? card('미확정이 많은 문서', bars(top.map(([d, n]) => [d.title, n, '#/doc/' + enc(d.id)])), {small: `가장 많은 문서: ${esc(top[0][0].title)} ${top[0][1]}건`}) : card('미확정이 많은 문서', empty('미확정이 남은 공통 정책이 없습니다.'))}
+      ${rv.length ? card('논의 필요 검토 항목', `<div class="tscroll"><table class="tb"><tbody>${rv.map(d => `<tr><td><a class="ttl" href="#/doc/${enc(d.id)}">${esc(d.title.replace(/^검토 필요 — /, ''))}</a></td></tr>`).join('')}</tbody></table></div>`, {raw: true}) : card('논의 필요 검토 항목', empty('논의 필요 검토 항목이 없습니다.', '선택지를 정리할 쟁점은 policies/review/ 에 검토 항목으로 올립니다.'))}</div>`
+    + `<div class="stack">${Object.entries(groups).map(([g, ds]) => `<span id="pg-${enc(g)}" class="anch"></span>` + card(esc(g), `<div class="tscroll"><table class="tb" style="table-layout:fixed"><thead><tr><th>문서</th><th style="width:170px">상태</th><th class="num" style="width:72px">규칙</th><th class="num" style="width:72px">미확정</th><th class="num" style="width:96px">따르는 기획</th><th style="width:110px">수정</th></tr></thead><tbody>${ds.map(d => `<tr><td><a class="ttl" href="#/doc/${enc(d.id)}">${esc(d.title)}</a><div class="sub">${esc(d.id)}${d.meta.owner ? ' · ' + esc(d.meta.owner) : ''}</div></td><td>${stBdg(d.meta.status)}</td><td class="num">${rules(d.id)}</td><td class="num">${undec(d.id) || '-'}</td><td class="num">${plansOf(d.id) || '-'}</td><td class="nw">${esc(d.meta.updated || '-')}</td></tr>`).join('')}</tbody></table></div>`, {raw: true, small: `${ds.length}개`})).join('')}</div>`;
+}
+function vGuides(){
+  crumb([['가이드']]);
+  const gd = D.docs.filter(d => d.kind === 'guide').sort((x, y) => x.order - y.order);
+  const G = [['저장소와 절차', /^(RM-00|RL-01|GD-01|GD-02|GD-08)$/], ['작성 기준', /^GD-0[4-7]$/], ['품질 검사', /^GD-09$/], ['도구 · 목록', /./]];
+  const first = gd.find(d => d.id === 'GD-03'), rest = gd.filter(d => d !== first), used = new Set();
+  const row = d => `<a class="gdoc" href="#/doc/${enc(d.id)}"><span class="no">${d.id}</span><span><b>${esc(d.title)}</b><small>${esc(d.path)}</small></span></a>`;
+  page.className = 'wrap';
+  page.innerHTML = pgtabs('가이드') + `<p class="lead">사용법 · 작성 기준 · 절차. 기획 저장소를 쓰는 법, 정의서 · 기획서 작성 기준, 업무 절차와 도구 안내 문서 ${gd.length}개입니다.${first ? ` 처음이면 ${first.id} “${esc(first.title)}”부터 읽습니다.` : ''}</p>`
+    + (first ? `<a class="lead-doc" href="#/doc/${enc(first.id)}"><span class="no">${first.id}</span><span><b style="font-size:var(--t-lg)">${esc(first.title)}</b><span class="sub">처음 쓰는 사람이 먼저 읽는 문서입니다.</span></span><span>읽기</span></a>` : '')
+    + `<div class="glist">${G.map(([t, re]) => { const ds = rest.filter(d => !used.has(d.id) && re.test(d.id)); ds.forEach(d => used.add(d.id)); return ds.length ? `<section class="ggrp"><h2>${t}</h2>${ds.map(row).join('')}</section>` : ''; }).join('')}</div>`;
+}
+// ───────── ID 찾기 · 찾기 ─────────
+function vId(id){
+  if (!id){
+    crumb([['ID 검색']]); page.className = 'wrap';
+    page.innerHTML = pgtabs('ID 검색') + `<p class="lead">ID를 넣으면 정의된 곳과 참조하는 모든 곳을 보여 줍니다. 기준 ID ${ids.length.toLocaleString()}개 · 다른 문서에서 참조된 ID ${Object.keys(D.refs).length.toLocaleString()}개</p>`
+      + card('', `<form id="idf" class="btns"><div class="srch" style="flex:1;max-width:420px"><svg class="ic"><use href="#i-search"/></svg><input id="idq" placeholder="예: TABLE-26 · INC-FN-REG-01" aria-label="ID"></div><button class="btn pri">검색</button></form>`);
+    $('#idf').onsubmit = e => { e.preventDefault(); const v = $('#idq').value.trim().toUpperCase(); location.hash = D.defs[v] ? '#/id/' + enc(v) : '#/search/' + enc(v); };
+    return;
+  }
+  const def = D.defs[id]; if (!def) return vSearch(id);
+  const rs = D.refs[id] || [], doc = byDoc[def.doc];
+  const g = {}; rs.forEach(r => (g[r.doc] = g[r.doc] || []).push(r.where));
+  crumb([[esc(doc.title), '#/doc/' + enc(def.doc)], [esc(id)]]); page.className = 'wrap';
+  const grp = {plan: [], other: []}, byPlan = {};
+  Object.entries(g).forEach(([did, ws]) => { const pl = planOf(did); if (byDoc[did].kind === 'plan' && pl){ (byPlan[pl.key] = byPlan[pl.key] || []).push([did, ws]); } else grp.other.push([[did, ws]]); });
+  grp.plan = Object.values(byPlan);
+  const row = items => { const [d0] = items[0], pl = planOf(d0), dd = byDoc[d0];
+    const name = pl && byDoc[d0].kind === 'plan' ? `<a class="ttl" href="#/plan/${pl.key}">${esc(pl.title)}</a><span class="sub">${items.map(([did]) => esc(byDoc[did].title)).join(' · ')}</span>` : `<a class="ttl" href="#/doc/${enc(d0)}">${esc(dd.title)}</a><span class="sub">${esc(dd.group)}</span>`;
+    return `<div class="r"><span>${name}</span><span class="w">${items.map(([did, ws]) => [...new Set(ws)].map(w => `<a class="mono" href="#/doc/${enc(did)}">${esc(w || '본문')}</a>`).join('')).join('')}</span></div>`; };
+  page.innerHTML = head({title: def.label ? esc(def.label) : esc(id), mono: !def.label, badge: `<span class="bdg acc">${KIND[def.kind]}</span>`, meta: `${def.label ? `<span class="mono idtag">${esc(id)}</span>` : ''}<span>${esc(doc.group)} · ${esc(doc.title)}</span><a href="${idHref(id)}">원문에서 보기</a>`})
+    + `<div class="sec"><h2>${esc(id)}을 가리키는 곳</h2><small>${rs.length}곳 · 기획 ${grp.plan.length}개 · 그 밖 ${grp.other.length}개</small></div>`
+    + (rs.length ? `<div class="refs">${grp.plan.length ? '<div class="gh">기획</div>' + grp.plan.map(row).join('') : ''}${grp.other.length ? '<div class="gh">공통 정책 · 그 밖</div>' + grp.other.map(row).join('') : ''}</div>` : `<div class="card">${empty('이 ID를 참조하는 문서가 없습니다.', '정책정의서 “1.2 따르는 공통 정책”에 규칙 ID를 적으면 이 목록에 나옵니다.')}</div>`);
+  if (rs.length) page.insertAdjacentHTML('beforeend', '<p class="help">문서가 바뀌면 다시 모읍니다. 정책정의서 「1.2 따르는 공통 정책」에 규칙 ID를 적으면 이 목록에 나옵니다.</p>');
+  linkify(page.querySelector('.refs'));
+}
+function vSearch(q){
+  const t = q.toLowerCase(); if (!t) return vHome();
+  crumb([['검색'], [`“${esc(q)}”`]]); page.className = 'wrap';
+  const hitIds = ids.filter(i => i.toLowerCase().includes(t) || D.defs[i].label.toLowerCase().includes(t)).slice(0, 40);
+  const hitDocs = D.docs.filter(d => (d.title + ' ' + d.body).toLowerCase().includes(t)).slice(0, 30);
+  const hitIss = D.issues.filter(i => Object.values(i).join(' ').toLowerCase().includes(t)).slice(0, 20);
+  const snip = d => { const b = d.body, k = b.toLowerCase().indexOf(t); return k < 0 ? '' : esc(b.slice(Math.max(0, k - 40), k + 60).replace(/\s+/g, ' ')); };
+  page.innerHTML = pgtabs(`“${esc(q)}” 검색 결과`) + `<p class="lead">검색어가 든 ID · 품질 이슈 · 문서입니다. 아래 칸을 누르면 그 묶음으로 갑니다.</p><div class="jump">${[['s-id', 'ID', hitIds.length, 40], ['s-iss', '품질 이슈', hitIss.length, 20], ['s-doc', '문서', hitDocs.length, 30]].map(([a, t, n, m]) => `<button type="button" class="bchip ${n ? '' : 'off'}" data-to="${a}" ${n ? '' : 'disabled'}>${t} <b>${n}${n === m ? '+' : ''}</b></button>`).join('')}</div><div class="stack">`
+    + (hitIds.length ? `<span id="s-id"></span>` + card('ID', `<div class="tscroll"><table class="tb"><thead><tr><th style="width:180px">ID</th><th style="width:110px">종류</th><th>내용</th><th>문서</th></tr></thead><tbody>${hitIds.map(i => `<tr><td class="id"><a class="rid" href="#/id/${enc(i)}">${i}</a></td><td>${KIND[D.defs[i].kind]}</td><td>${esc(D.defs[i].label)}</td><td>${(pl => pl ? `<b style="font-weight:500">${esc(pl.title)}</b> · ` : '')(planOf(D.defs[i].doc))}${esc(byDoc[D.defs[i].doc].title)}</td></tr>`).join('')}</tbody></table></div>`, {raw: true, small: hitIds.length + '건'}) : '')
+    + (hitIss.length ? `<span id="s-iss"></span>` + card('품질 이슈', `<div class="tscroll"><table class="tb"><thead><tr><th style="width:140px">ID</th><th style="width:100px">종류</th><th>제목</th><th style="width:160px">기획</th></tr></thead><tbody>${hitIss.map(i => `<tr><td class="id">${esc(i.id)}</td><td>${IK[i.kind]}</td><td><a class="ttl" href="#/issue/${enc(i.id)}">${esc(i.title)}</a></td><td>${esc(planBy(i.plan).title)}</td></tr>`).join('')}</tbody></table></div>`, {raw: true, small: hitIss.length + '건'}) : '')
+    + (hitDocs.length ? `<span id="s-doc"></span>` + card('문서', `<div class="tscroll"><table class="tb"><tbody>${hitDocs.map(d => `<tr><td><a class="ttl" href="#/doc/${enc(d.id)}">${esc(d.group)} · ${esc(d.title)}</a><div class="sub">…${snip(d)}…</div></td></tr>`).join('')}</tbody></table></div>`, {raw: true, small: hitDocs.length + '건'}) : '')
+    + (!hitIds.length && !hitDocs.length && !hitIss.length ? card('', empty('검색 결과가 없습니다.', '단어를 줄이거나 ID 일부만 입력해 다시 검색하세요.'), {raw: true}) : '') + '</div>';
+  page.querySelectorAll('.jump [data-to]').forEach(b => b.onclick = () => { const t = document.getElementById(b.dataset.to); if (t) t.nextElementSibling.scrollIntoView({behavior: 'smooth', block: 'start'}); });
+}
+
+// ───────── 결정할 것 ─────────
+const docName = o => { if (o.kind === 'term') return (o.plans || [planBy(o.plan)]).map(x => x.title).join(' · ') + ' · 화면 문구 용어집'; if (o._i) return planBy(o.plan).title + ' · 품질 검사 ' + (o._i.round || ''); const d = byDoc[o.doc]; return d ? (d.kind === 'plan' ? d.group + ' · ' + d.title : d.title) : o.doc; };
+function openList(rows, withDoc, tbar, bind){
+  const href = o => o.kind === 'recheck' ? '#/doc/DECISIONS' : idHref(o.id);
+  return {rows, key: o => o.id, tbar, bind, empty: '미결 사항이 없습니다.', emptyHelp: '',
+    cols: [{h: 'ID', cls: 'id', w: '150px', v: o => esc(o.id)}, {h: '항목', v: o => `<span class="ttl">${esc(o.label)}</span>${withDoc ? `<div class="sub">${esc(docName(o))}</div>` : ''}`},
+           {h: '막는 정도 · 지금', cls: 'opt', v: o => esc(o.now || '-')}, {h: '담당', cls: 'nw', w: '120px', v: o => esc(o.who || '-')}],
+    detail: o => o._i ? issueDetail(o._i) : ({key: o.id, title: o.label, head: `<span class="bdg warn">${KIND[o.kind] || o.kind}</span><span class="mut">${esc(docName(o))}</span>`,
+      fields: [['지금 상태', o.now], ['정해야 할 것', o.need], ['담당 · 정책', o.who], ['우선', o.pri], ['미확정 ID', o.uid]],
+      links: `<a class="btn sm" href="${href(o)}">원문에서 보기</a>${D.defs[o.id] ? `<a class="btn sm" href="#/id/${enc(o.id)}">참조하는 곳</a>` : ''}`})};
+}
+const OF = {g: 'qa', q: ''};
+// 결정할 것은 기획이 정할 것만, 공통 정책 쪽 미결은 「공통 정책 › 정책 미결」로 나눈다
+const PLAN_OG = ['qa', 'oq'], POL_OG = ['all', 'gap', 'recheck', 'cross', 'review'];
+const ogF = k => (OG.find(x => x[0] === k) || [])[3] || (() => false);
+const nOpen = keys => D.open.filter(o => keys.some(k => ogF(k)(o))).length;
+D.open.push(...qaDecOpen());
+
+// ───────── 결정 회의 ─────────
+// 결정할 것 · 정책 미결을 한 표에 모아 회의에서 정한다. 고른 것은 브라우저에만 두고 「결정 반영 요청」 파일(JSON)로 받는다.
+// 그 파일을 Claude 에게 주면 종류별 규칙(GD-08 2.6)대로 원본 파일을 고쳐 PR 을 연다. 포털은 고치지 않는다
+const DK = {qa: '품질 검사 결정', term: '용어집 결정', oq: '기획 미결정', all: '공통 정책 미확정', gap: '정책 · 코드 불일치', recheck: '담당자 확인 대기', cross: '문서 간 충돌', review: '논의 필요'};
+const dkOf = o => o.kind === 'qa' ? 'qa' : o.kind === 'term' ? 'term' : o.kind === 'oq' ? 'oq' : o.kind === 'open' || o.kind === 'draft' ? 'all' : o.kind;
+function whereOf(o){
+  const k = dkOf(o), p = o.plan ? planBy(o.plan) : planOf(o.doc), d = byDoc[o.doc];
+  if (k === 'qa') return {file: `${p.dir}/qa/decisions.json`, at: `${o.id} (결정표 decisions.json 에 넣고 tracker.py decide)`};
+  if (k === 'term') return {file: (o.plans || [p]).map(x => `${x.dir}/qa/${x.ui.file}`).join(' · '), at: `용어집 시트 「${o.term}」 줄의 상태 · 용어집 반영 (기획 ${(o.plans || [p]).length}개 엑셀 모두. 확정이면 policies/product/terms/POL-GLOSSARY.md 에도 올린다)`};
+  if (k === 'recheck') return {file: 'policies/guide/DECISIONS.md', at: `6장 표 ${o.id} 행`};
+  return {file: (d && d.path) || o.doc, at: k === 'oq' ? `미결정 표 ${o.id} 행` : k === 'all' ? `미확정 표 ${o.id} 행` : `${o.id} 항목`};
+}
+const DF = {k: '', who: '', q: '', sort: 'block', plan: '', mine: false};
+let DSEL = {}; try { DSEL = JSON.parse(localStorage.getItem('decide') || '{}'); } catch (e) {}
+const saveSel = () => { try { localStorage.setItem('decide', JSON.stringify(DSEL)); } catch (e) {} };
+// 품질 검사 결정의 선택지: 품질요약 「결정 필요」의 남은 것 전체(없으면 먼저 정할 것)에 options · recommend_pick 이 있으면 쓴다
+function qaOpts(){ const m = {}; D.plans.forEach(p => { const d = (p.qs && p.qs['결정 필요']) || {}; [...(d['남은 것 전체'] || []), ...(d['먼저 정할 것'] || [])].forEach(x => { if (x && x.options && x.options.length && !m[x.id]) m[x.id] = x; }); }); return m; }
+// 용어집 결정: 화면 문구 엑셀 용어집 시트에서 미확정 용어(확정도 용어집 밖도 아닌 것)
+const termOpen = () => uiAll().filter(o => o.open).map(o => ({kind: 'term', id: `용어 · ${o.term}`, term: o.term, plan: o.plans[0].key, plans: o.plans, label: `「${o.term}」 ${o.mean ? '· ' + o.mean.slice(0, 40) : ''}`, need: o.items.filter(i => i.open).map(i => `${o.plans.length > 1 ? i.plan.title + ': ' : ''}${[fmtApply(i.apply), i.note].filter(Boolean).join(' · ')}`).join(' / ')}));
+const dkPlan = o => o.plan || (planOf(o.doc) || {}).key || '';
+function decideRows(){
+  const rows = [...D.open.filter(o => DK[dkOf(o)]), ...termOpen()];
+  const ids = new Set(rows.map(o => o.id));
+  // 같은 쟁점 묶기: 한 항목의 글에 다른 열린 항목 ID 가 나오면 그 ID 로 묶는다
+  rows.forEach(o => { const txt = o._i ? Object.values(o._i).join(' ') : [o.label, o.now, o.need].join(' ');
+    const hit = (txt.match(/[A-Z][A-Z0-9]*-(?:U\d+|OQ-\d+|[A-Z]+-\d+|\d+)/g) || []).find(x => x !== o.id && ids.has(x)); o._grp = hit || ''; });
+  const plansOfRule = id => { const rs = D.refs[id] || []; return new Set(rs.map(r => (planOf(r.doc) || {}).key).filter(Boolean)).size; };
+  rows.forEach(o => { o._block = o.unblocks || 0; o._plans = dkOf(o) === 'all' ? plansOfRule(o.id) : 0; });
+  return rows;
+}
+function vDecide(){
+  crumb([['결정할 것', '#/open/qa'], ['결정 회의']]);
+  page.className = 'wrap';
+  const all = decideRows(), QO = qaOpts();
+  page.innerHTML = pgtabs('결정 회의') + `<p class="lead">결정할 것 · 정책 미결을 한 표에 모았습니다. 회의에서 위에서부터 고르고 「결정 반영 요청 받기」로 파일을 받아 Claude 에게 「이 결정 반영해 줘」라고 주면, 원본 파일을 고쳐 검토 요청(PR)을 엽니다. 고른 것은 이 브라우저에만 저장됩니다.</p>
+    <div class="card"><div class="tbar"><select class="ipt sm" id="d-k" aria-label="종류" style="width:auto"><option value="">종류 전체</option>${Object.entries(DK).map(([k, t]) => `<option value="${k}" ${DF.k === k ? 'selected' : ''}>${t} ${all.filter(o => dkOf(o) === k).length}</option>`).join('')}</select>
+      <select class="ipt sm" id="d-p" aria-label="기획" style="width:auto"><option value="">기획 · 정책 전체</option>${D.plans.filter(p => all.some(o => dkPlan(o) === p.key)).map(p => `<option value="${p.key}" ${DF.plan === p.key ? 'selected' : ''}>${esc(p.title)}</option>`).join('')}<option value="-" ${DF.plan === '-' ? 'selected' : ''}>공통 정책</option></select>
+      <label class="chk"><input type="checkbox" id="d-m" ${DF.mine ? 'checked' : ''}> 고른 것만</label>
+      <select class="ipt sm" id="d-s" aria-label="정렬" style="width:auto"><option value="block" ${DF.sort === 'block' ? 'selected' : ''}>영향 큰 순</option><option value="id" ${DF.sort === 'id' ? 'selected' : ''}>ID 순</option></select>
+      <div class="srch sm grow"><svg class="ic"><use href="#i-search"/></svg><input id="d-q" type="search" placeholder="ID · 기획 · 단어 검색" aria-label="검색" value="${esc(DF.q)}"></div>
+      <input class="ipt sm" id="d-who" placeholder="결정한 사람" aria-label="결정한 사람" value="${esc(DF.who || localStorage.getItem('decideWho') || '')}" style="width:140px">
+      <span class="cnt" id="d-n"></span><button type="button" class="btn sm" id="d-clr">고른 것 지우기</button><button type="button" class="btn sm pri" id="d-dl">결정 반영 요청 받기</button></div><div id="dlist"></div></div>`;
+  const draw = () => {
+    let rs = all.filter(o => (!DF.k || dkOf(o) === DF.k) && (!DF.plan || (DF.plan === '-' ? !dkPlan(o) : dkPlan(o) === DF.plan)) && (!DF.mine || (DSEL[o.id] && DSEL[o.id].pick)) && (!DF.q || (o.id + ' ' + o.label + ' ' + docName(o) + ' ' + (o.need || '')).toLowerCase().includes(DF.q)));
+    rs.sort(DF.sort === 'block' ? (a, b) => (b._block + b._plans) - (a._block + a._plans) || a.id.localeCompare(b.id, 'en', {numeric: true}) : (a, b) => a.id.localeCompare(b.id, 'en', {numeric: true}));
+    const picked = Object.values(DSEL).filter(x => x.pick).length;
+    $('#d-n').textContent = `${rs.length.toLocaleString()}건 · 고른 것 ${picked}건`;
+    if (!rs.length){ $('#dlist').innerHTML = empty(DF.mine ? '고른 항목이 없습니다.' : '조건에 맞는 항목이 없습니다.', DF.mine ? '「고른 것만」을 끄고 줄마다 「고른 안」을 고릅니다.' : '종류 · 기획 · 검색어를 바꿉니다.'); return; }
+    $('#dlist').innerHTML = `<div class="tscroll"><table class="tb dtb"><thead><tr><th style="width:150px">ID</th><th>무엇을 정하나</th><th style="width:140px">영향</th><th style="width:200px">고른 안</th><th style="width:220px">메모</th></tr></thead><tbody>${rs.map(o => { const sel = DSEL[o.id] || {};
+      return `<tr data-id="${esc(o.id)}" class="${sel.pick ? 'on' : ''}"><td class="id">${esc(o.id)}<div class="sub">${DK[dkOf(o)]}</div></td>
+        <td><span class="ttl">${esc(o.label)}</span><div class="sub">${esc(docName(o))}${o._grp ? ` · <span class="bdg">같은 쟁점 ${esc(o._grp)}</span>` : ''}</div>${o.need ? `<div class="sub drec">추천: ${esc(String(o.need).slice(0, 160))}</div>` : ''}</td>
+        <td class="nw">${o._block ? `풀리는 케이스 ${o._block}` : ''}${o._block && o._plans ? '<br>' : ''}${o._plans ? `따르는 기획 ${o._plans}개` : ''}${!o._block && !o._plans ? '<span class="mut">-</span>' : ''}</td>
+        <td><select class="ipt sm" data-f="pick" aria-label="${esc(o.id)} 고른 안"><option value="">고르지 않음</option>${QO[o.id] ? QO[o.id].options.map((t, n) => `<option value="o:${n}" ${sel.pick === 'o:' + n ? 'selected' : ''}>${n + 1}. ${esc(String(t).replace(/^\s*\d+\.\s*/, '').slice(0, 40))}${n === QO[o.id].recommend_pick ? ' (추천)' : ''}</option>`).join('') + `<option ${sel.pick === '보류' ? 'selected' : ''}>보류</option>` : ['추천대로', '다른 안', '보류'].map(v => `<option ${sel.pick === v ? 'selected' : ''}>${v}</option>`).join('')}</select></td>
+        <td><input class="ipt sm" data-f="memo" placeholder="${sel.pick === '다른 안' ? '고른 안을 적는다' : '메모'}" aria-label="${esc(o.id)} 메모" value="${esc(sel.memo || '')}" style="width:100%"></td></tr>`; }).join('')}</tbody></table></div>`;
+    rzScan(); fitTables();
+  };
+  $('#dlist').oninput = $('#dlist').onchange = e => { const tr = e.target.closest('tr[data-id]'), f = e.target.dataset.f; if (!tr || !f) return;
+    const id = tr.dataset.id; DSEL[id] = Object.assign(DSEL[id] || {}, {[f]: e.target.value}); if (!DSEL[id].pick && !DSEL[id].memo) delete DSEL[id]; saveSel();
+    tr.classList.toggle('on', !!(DSEL[id] && DSEL[id].pick)); $('#d-n').textContent = $('#d-n').textContent.replace(/고른 것 \d+건/, `고른 것 ${Object.values(DSEL).filter(x => x.pick).length}건`); };
+  $('#d-k').onchange = e => { DF.k = e.target.value; draw(); };
+  $('#d-s').onchange = e => { DF.sort = e.target.value; draw(); };
+  $('#d-p').onchange = e => { DF.plan = e.target.value; draw(); };
+  $('#d-m').onchange = e => { DF.mine = e.target.checked; draw(); };
+  $('#d-q').oninput = e => { DF.q = e.target.value.trim().toLowerCase(); draw(); };
+  $('#d-who').oninput = e => { DF.who = e.target.value.trim(); try { localStorage.setItem('decideWho', DF.who); } catch (x) {} };
+  $('#d-clr').onclick = () => { if (!confirm('고른 것과 메모를 모두 지웁니다.')) return; DSEL = {}; saveSel(); draw(); };
+  $('#d-dl').onclick = () => {
+    const byId = Object.fromEntries(all.map(o => [o.id, o])), day = new Date(), ymd8 = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    const items = Object.entries(DSEL).filter(([id, x]) => x.pick && byId[id]).map(([id, x]) => { const o = byId[id], w = whereOf(o);
+      const q = QO[id], n = /^o:\d+$/.test(x.pick) ? +x.pick.slice(2) : null, pk = n === null ? {} : {pick: n, choice: q.options[n], recommended: n === q.recommend_pick};
+      return {id, 종류: DK[dkOf(o)], 종류코드: dkOf(o), 제목: o.label, 기획: o.plan ? planBy(o.plan).title : ((planOf(o.doc) || {}).title || ''), 고른안: n === null ? x.pick : (n === q.recommend_pick ? '추천대로' : '다른 안'), ...pk, 메모: x.memo || '', 추천: o.need || '', 반영할곳: w, 같은쟁점: o._grp || '', 같이풀리는것: {케이스: o._block || 0, 기획수: o._plans || 0}}; });
+    if (!items.length){ alert('고른 항목이 없습니다. 「고른 안」을 하나 이상 고르세요.'); return; }
+    const out = {양식: '결정 반영 요청', 버전: 1, 결정한사람: DF.who || localStorage.getItem('decideWho') || '', 날짜: ymd8, 기준커밋: D.commit, 건수: items.length,
+      반영규칙: 'guides/claude.md 2.6 「결정 반영」 표대로 고친다. 품질 검사 결정(종류코드 qa)은 이 파일을 그 기획 qa/decisions.json 으로 두면 tracker.py decide 가 읽는다(pick · choice 가 있으면 그 선택지로)', 항목: items};
+    const blob = new Blob([JSON.stringify(out, null, 1)], {type: 'application/json'}), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `결정반영요청-${ymd8}.json`; a.click(); URL.revokeObjectURL(a.href);
+  };
+  draw();
+}
+function vOpen(g, sel){
+  OF.g = OG.some(x => x[0] === g) ? g : OF.g; if (sel) DW.sel = sel;
+  const grp = OG.find(x => x[0] === OF.g);
+  const isPol = POL_OG.includes(OF.g), keys = isPol ? POL_OG : PLAN_OG;
+  crumb(isPol ? [['공통 정책', '#/policies', '공통 정책 목록'], ['정책 미결', '#/open/all'], [grp[1]]] : [['결정할 것', '#/open/qa'], [grp[1]]]);
+  page.className = 'wrap';
+  page.innerHTML = (isPol ? pgtabs('정책 미결', keys.map(k => OG.find(x => x[0] === k)).map(([k, t, , f]) => [k, t, `#/open/${k}`, D.open.filter(f).length || '0']), OF.g) : pgtabs(grp[1]))
+    + `<p class="lead">${grp[2]}. ${OF.g === 'qa' ? '<a href="#/decide">결정 회의</a>에서 고르고 「결정 반영 요청 받기」로 받은 파일을 Claude 에게 주면 반영되고, 다음 차수에 막힌 케이스를 다시 돌립니다.' : `결론을 문서에 반영하면 “${isPol ? '정책 미결' : '결정할 것'}” 목록에서 빠집니다. 논의는 GitHub 이슈에 라벨 “정책-미결정”을 달아 엽니다.`}</p><div id="odist"></div><div id="olist"></div>`
+    + (PLAN_OG.includes(OF.g) ? basisBox([['보는 범위', `${OF.g === 'qa' ? '품질 검사에서 나온 결정 필요 가운데 아직 정하지 않은 것' : '기획마다 정책정의서 「미결정」 표에 남은 것'} <b>${D.open.filter(grp[3]).length}건</b>`],
+        ['출처', OF.g === 'qa' ? srcChips(D.plans.filter(p => (p.qa || []).length).map(p => p.key)) + '<span class="bnote">기획마다 가장 늦은 차수의 테스트결과 엑셀 「결정 필요」 시트입니다.</span>' : '기획 폴더의 정책정의서(policy.md) 「미결정」 표']]) : '');
+  const draw = (focusQ) => {
+    const rs = D.open.filter(grp[3]).filter(o => !OF.q || (o.id + ' ' + Object.values(o).join(' ') + ' ' + docName(o)).toLowerCase().includes(OF.q));
+    const grpOf = o => { if (o._i) return planBy(o.plan).title; const d = byDoc[o.doc]; return d ? (d.kind === 'plan' ? d.group : d.title) : o.doc; };
+    const by = {}; rs.forEach(o => { const k = grpOf(o); by[k] = (by[k] || 0) + 1; });
+    const top = Object.entries(by).sort((a, b) => b[1] - a[1]);
+    $('#odist').innerHTML = rs.length && top.length > 1 ? card(OF.g === 'oq' || OF.g === 'qa' ? '기획별 건수' : '문서별 건수', bars(top.slice(0, 8).map(([t, n]) => [t, n, ''])) + `<span class="help">막대를 누르면 그 ${OF.g === 'oq' || OF.g === 'qa' ? '기획' : '문서'} 항목만 봅니다.</span>`, {small: `${esc(top[0][0])}에 ${top[0][1]}건(${Math.round(top[0][1] / rs.length * 100)}%)`}) : '';
+    $('#odist').querySelectorAll('.bars .r').forEach(r => { r.style.cursor = 'pointer'; r.onclick = () => { OF.q = r.querySelector('.nm').textContent.toLowerCase(); draw(); }; });
+    listView($('#olist'), openList(rs, true, `<div class="srch sm grow"><svg class="ic"><use href="#i-search"/></svg><input id="o-q" type="search" placeholder="ID · 기획 · 단어 검색" aria-label="검색" value="${esc(OF.q)}"></div><span class="cnt">총 ${rs.length.toLocaleString()}건</span>`,
+      () => { const inp = $('#o-q'); inp.oninput = () => { OF.q = inp.value.trim().toLowerCase(); draw(inp.selectionStart); }; if (focusQ !== undefined){ inp.focus(); inp.setSelectionRange(focusQ, focusQ); } }));
+  };
+  draw();
+}
+
+// ───────── 품질 ─────────
+function qaLatest(p){
+  const L = p.qa_latest; if (!L) return '';
+  const r = (p.qa || []).find(x => x.group === 'test' && x.day === L.day && x.round === L.round);
+  const rep = r && r.files.find(f => f.ext === 'html');
+  return `<span class="help" style="margin:0">최신 ${esc(L.round)} · ${qday(L.day)}${rep ? ` · <a href="${rep.href}" target="_blank" rel="noopener">보고서 열기</a>` : ''} · <a href="${L.href}" download>정본 엑셀 받기</a></span>`;
+}
+function roundCard(p, titleLink){
+  const L = p.qa_latest, r = L && (p.qa || []).find(x => x.group === 'test' && x.day === L.day && x.round === L.round), rs = (r && r.rounds) || [];
+  const h2 = titleLink ? `<a class="ttl" href="#/plan/${p.key}/qa">${esc(p.title)}</a>` : '차수별 판정';
+  if (!rs.length) return card(h2, empty('판정 기록이 없습니다.'), {raw: true});
+  const real = rs.filter(x => x.round !== '0차'), first = real[0] && verdict(real[0].count), last = verdict(rs[rs.length - 1].count), lc = rs[rs.length - 1].count;
+  const trend = real.length > 1 && first.rate !== null && last.rate !== null ? `통과율이 ${real[0].round} ${first.rate}%에서 ${real[real.length - 1].round} ${last.rate}%로 바뀌었습니다. ` : rs.some(x => x.round === '0차') ? '0차는 시안 대조라 통과율 추이에 넣지 않습니다. ' : '';
+  const blocked = (lc['차단'] || 0) + (lc['보류'] || 0);
+  return card(h2, `<p class="lede">${trend}최신 ${rs[rs.length - 1].round}: ${last.tot}건 중 ${last.run}건 실행(${last.runRate}%)${blocked ? `, <b>${blocked}건은 차단 · 보류</b>로 아직 판정하지 못했습니다` : ''}.</p>`
+    + `<div class="rounds">${rs.map(x => { const v = verdict(x.count); return `<div class="rd"><span>${esc(x.round)}${x.round === '0차' ? '<div class="sub" style="margin:0">시안 대조</div>' : ''}</span>${vstk(x.count)}<span class="rv">${v.rate !== null ? `통과율 ${v.rate}% · ` : ''}실행 ${v.run}/${v.tot}</span></div>`; }).join('')}</div>${vleg()}`,
+    {small: titleLink ? `${p.code} · 최신 ${esc(L.round)} · ${qday(L.day)}` : '통과율: 통과 ÷ (통과 + 실패)'});
+}
+function catCard(key){
+  const ds = D.issues.filter(i => i.open && i.kind === 'defect' && !DECIDE_CATS.includes(i.cat) && (!key || i.plan === key));
+  if (!ds.length) return card('미해결 결함은 어디서 고치나요?', empty('미해결 결함이 없습니다.'), {raw: true});
+  const by = {}; ds.forEach(i => { const k = i.cat || '기타'; by[k] = (by[k] || 0) + 1; });
+  const rows = Object.entries(by).sort((a, b) => b[1] - a[1]), dev = ds.filter(i => own(i.owner) === '개발').length, k0 = key || 'all';
+  const isDev = c => /개발 결함|디자인 불일치/.test(c);
+  return card('미해결 결함은 어디서 고치나요?', `<p class="lede">미해결 결함 ${ds.length}건 중 <b>${ds.length - dev}건(${Math.round((ds.length - dev) / ds.length * 100)}%)은 기획서 · 디자인을 고쳐야</b> 풀리고, ${dev}건은 개발이 고칩니다.</p>`
+    + bars(rows.map(([c, n]) => [`${c} · ${isDev(c) ? '개발' : '기획'}`, n, `#/issues/${k0}/defect/${isDev(c) ? '개발' : '!개발'}`, isDev(c) ? 'dev' : ''])) + `<span class="help">범주 이름 뒤는 고칠 곳입니다. 막대를 누르면 그 범주 목록을 엽니다.</span>`, {small: `범주별 · 미해결 결함 ${ds.length}건`});
+}
+function qaRounds(p){
+  const G = [['test', '품질 검사', '기획서대로 동작하는지 차수마다 검사한 결과'], ['ui', '화면 문구 · 용어집', '화면 글자를 모아 정책과 비교한 결과와 변경 요청'], ['rev', '역기획', '기획서 없이 개발된 화면의 지금 동작과 결정 필요 항목']];
+  const file = f => `<a href="${f.href}" ${f.ext === 'html' ? 'target="_blank" rel="noopener"' : 'download'}><svg class="ic"><use href="#${f.ext === 'html' ? 'i-ext' : 'i-download'}"/></svg><span class="ttl">${esc(f.label)}</span><small>${f.ext === 'html' ? '열기' : f.ext.toUpperCase()}</small></a>`;
+  const counts = r => { const all = r.rounds || [], own = all.filter(x => x.round === r.round), xs = own.length ? own : all;
+    return xs.map(x => `<div>${own.length ? '' : `<b>${esc(x.round)}</b> `}${['통과','실패','차단','보류','미실행'].filter(k => x.count[k]).map(k => `${k} ${x.count[k]}`).join(' · ')}</div>`).join('') || '<span class="mut">판정 기록 없음</span>'; };
+  return G.filter(([g]) => p.qa.some(r => r.group === g)).map(([g, t, d]) => {
+    const rs = p.qa.filter(r => r.group === g), test = g === 'test', seen = {};
+    const th = `${test ? '<th style="width:80px">차수</th>' : ''}<th style="width:140px">날짜</th>${test ? '<th>판정 수</th>' : ''}<th>문서</th>`;
+    const rows = rs.map((r, i) => { const again = test && seen[r.round]; seen[r.round] = 1;
+      return `<tr class="${again ? 'qold' : ''}">${test ? `<td class="nw"><b>${esc(r.round || '-')}</b>${again ? '<div class="sub">이전 실행</div>' : ''}</td>` : ''}<td class="nw">${qday(r.day)}${i === 0 ? ' <span class="bdg acc">최신</span>' : ''}</td>${test ? `<td>${counts(r)}</td>` : ''}<td><div class="qfs">${r.files.map(file).join('')}</div></td></tr>`; });
+    return card(t, `<div class="tscroll"><table class="tb"><thead><tr>${th}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`, {raw: true, small: d + (rows.length > 1 && test ? ' · 최신 파일에 지난 차수 판정까지 모두 들어 있습니다' : '')});
+  }).join('');
+}
+// 목록 · 숫자의 기준: 보는 범위 · 정렬 · 출처를 목록 위 한 상자에 둔다
+const basisBox = rows => `<div class="basis">${rows.filter(Boolean).map(([k, v]) => `<div class="br"><span class="bk">${k}</span><div class="bv">${v}</div></div>`).join('')}</div>`;
+const srcChips = keys => keys.map(k => { const p = planBy(k), L = p.qa_latest, q = p.qs; return L ? `<a class="bchip src" href="${L.href}" download title="정본 엑셀 받기"><svg class="ic"><use href="#i-download"/></svg>${esc(p.title)} <b>${esc(q ? q['차수'] || L.round : L.round)}</b><span>${q && q['만든 시각'] ? '만든 시각 ' + esc(q['만든 시각']) : qday(L.day)}</span>${q && q['초안'] ? '<span class="bdg bad" style="height:18px">초안</span>' : ''}</a>` : ''; }).join('');
+const gd09 = () => byDoc['GD-09'] ? '<a href="#/doc/GD-09">GD-09 “품질 검사 운영”</a>' : 'GD-09';
+// ───────── 화면 문구 · 용어 ─────────
+// 품질 플러그인이 개발 화면의 글자를 모아 공통 정책(POL-WRITING · POL-GLOSSARY · POL-UILABEL)과 비교한 결과(「화면문구.xlsx」)를 보인다.
+// 용어는 기획마다 나누지 않고 하나의 목록으로 합친다: 한 용어가 어느 기획 · 화면 · 위치에서 어떻게 쓰였는지 한 번에 본다.
+// 판단 · 제안 문구 · 용어집 반영은 기획마다 엑셀이 정본이다. 포털은 읽기만 한다
+// 엑셀 「용어집 반영」 원문 「올리지 않음(이유)」는 화면에서 「용어집 밖 · 이유」로 보인다
+const fmtApply = a => { const m = String(a || '').match(/^올리지 않음\s*\(?([^)]*)\)?(.*)$/); return m ? `용어집 밖${m[1] ? ' · ' + m[1].trim() : ''}${m[2] ? m[2] : ''}` : String(a || ''); };
+const ymd6 = d => String(d || '').replace(/^(\d\d)(\d\d)(\d\d)$/, '20$1-$2-$3');
+// 상태 셋: 미확정(용어집에 올릴지 정함) · 확정(용어집에 있음) · 용어집 밖(열 · 버튼 · 화면 이름처럼 용어집에 올리지 않는 이름)
+function uiAll(keys){
+  const ps = D.plans.filter(p => p.ui && (!keys || keys.includes(p.key))), M = {};
+  ps.forEach(p => p.ui.terms.forEach(t => {
+    const o = M[t.term] || (M[t.term] = {term: t.term, mean: '', avoid: [], items: [], at: [], avoid_at: [], plans: [], en: [], gl: null, latin: !!t.latin});
+    if (!o.mean && t.mean) o.mean = t.mean;
+    (t.en || []).forEach(e => { if (!o.en.includes(e)) o.en.push(e); }); if (!o.gl && t.gl) o.gl = t.gl;
+    if (t.avoid && !o.avoid.includes(t.avoid)) o.avoid.push(t.avoid);
+    o.items.push({plan: p, state: t.state, open: t.open, apply: t.apply, note: t.note});
+    if (!o.plans.includes(p)) o.plans.push(p);
+    (t.at || []).forEach(x => o.at.push({...x, plan: p}));
+    (t.avoid_at || []).forEach(x => { if (!(t.at || []).some(y => y.id === x.id)) o.avoid_at.push({...x, plan: p}); });
+  }));
+  return Object.values(M).map(o => {
+    o.open = o.items.some(i => i.open); o.ok = !o.open && o.items.some(i => i.state === '확정');
+    o.st = o.open ? '미확정' : o.ok ? '확정' : '용어집 밖';
+    o.why = o.st === '용어집 밖' ? [...new Set(o.items.map(i => (String(i.apply).match(/\(([^)]+?)(?:\)|$)/) || [])[1]).filter(Boolean))].join(' · ') : '';
+    o.avoidS = o.avoid.join(' · '); o.nScr = new Set(o.at.map(scrKey)).size;
+    const top = arr => { const c = {}; arr.filter(Boolean).forEach(v => c[v] = (c[v] || 0) + 1); return Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0] || ''; };
+    o.kind = top(o.at.map(x => x.type)) || '-'; o.menu2 = top(o.at.map(x => x.path[1])) || top(o.at.map(x => x.path[0])) || '-';
+    return o; }).sort((x, y) => (y.open - x.open) || (y.ok - x.ok) || y.at.length - x.at.length || x.term.localeCompare(y.term, 'ko'));
+}
+// 영문: 화면 글자 사전(ko → en) · 용어집 괄호 영문. 영문 그대로 쓰는 용어는 「영문 고정」
+const termEn = o => o.latin ? `<span class="mono">${esc(o.term)}</span><div class="sub">영문 고정</div>` : o.en.length ? `${o.en.map(esc).join(' · ')}${o.en.length > 1 ? ` <span class="enn" title="화면 사전에 영문이 ${o.en.length}가지로 쓰였습니다">표기 ${o.en.length}가지</span>` : ''}` : '<span class="mut">-</span>';
+const termState = (o, full = true) => `<span class="bdg ${o.st === '확정' ? 'ok' : o.st === '미확정' ? 'warn' : ''}" title="${o.st === '용어집 밖' ? '메뉴 · 열 이름처럼 용어집에 올리지 않는 이름' + (o.why ? ': ' + esc(o.why) : '') : o.st === '미확정' ? '같은 뜻에 쓸 말을 아직 하나로 고르지 않았습니다' : '용어집에 있는 용어'}">${o.st}</span>${full && o.why ? `<div class="sub">${esc(o.why)}</div>` : ''}`;
+function uiFixRows(ps, q){
+  const fx = ps.flatMap(p => p.ui.fixes.map(f => ({...f, plan: p}))).filter(f => !q || (f.id + ' ' + f.text + ' ' + f.to + ' ' + f.menu + ' ' + f.screen + ' ' + f.note).toLowerCase().includes(q));
+  const by = {}; fx.forEach(f => { const k = (f.menu ? f.menu + ' · ' : '') + f.screen + (f.stype ? ` (${f.stype})` : ''); (by[k] = by[k] || []).push(f); });
+  return Object.entries(by).map(([k, rs]) => { const f0 = rs[0], parts = [...(f0.menu || '').split(/\s*>\s*/), f0.screen].filter(Boolean);
+    return `<tr class="grp scr"><td colspan="5"><span class="crumbs">${parts.map((x, i) => i === parts.length - 1 ? `<b>${esc(x)}</b>` : `<span>${esc(x)}</span>`).join('<i>›</i>')}</span>${f0.stype ? ` <span class="stype">${esc(f0.stype)}</span>` : ''}<span class="gcnt">${esc(f0.plan.title)} · ${rs.length}줄</span></td></tr>` + rs.map(f => `<tr class="${f.state === '보류' ? 'dim' : ''}"><td class="id">${esc(f.id)}<div class="sub">${esc(f.type)}${f.loc ? ' · ' + esc(f.loc) : ''}</div></td>
+    <td><span class="uit">${esc(f.text)}</span></td><td>${f.to ? `<span class="uit to">${esc(f.to)}</span>` : '<span class="mut">-</span>'}</td>
+    <td class="nw"><span class="bdg ${f.state === '수정' ? 'warn' : ''}">${esc(f.state)}</span>${f.cat ? `<div class="sub">${esc(f.cat)}</div>` : ''}</td><td><span class="sub">${esc(f.note).replace(/\b([A-Z]+-[A-Z0-9]+(?:-\d+)?)\b/g, '<span class="mono">$1</span>')}</span></td></tr>`).join(''); }).join('');
+}
+// 쓰인 곳: 기획 › 메뉴 뎁스 · 화면마다 묶고, 줄마다 위치(탭 · 창 · 영역) · 종류 · 실제 문구 · 문구 ID
+function termWhere(list, word, title, sub){
+  if (!list.length) return '';
+  const hl = (txt, w) => { const e = esc(txt); return w ? e.split(esc(w)).join(`<mark>${esc(w)}</mark>`) : e; };
+  const by = {}; list.forEach(x => { const k = x.path.filter(Boolean).join(' › ') + (x.stype ? ` (${x.stype})` : ''); (by[k] = by[k] || {plan: x.plan, xs: []}).xs.push(x); });
+  return `<section class="pf"><h5>${title} <span class="mut">${list.length}곳</span></h5>${sub ? `<p class="help" style="margin:0 0 6px">${sub}</p>` : ''}<div class="twhere">${Object.entries(by).map(([k, g]) => `<div class="tw-g"><b>${esc(k)}<span class="mut"> · ${esc(g.plan.title)}</span></b>${g.xs.map(x => `<div class="tw-r"><span class="tw-l">${esc(x.loc)}<em>${esc(x.type)}</em></span><span class="tw-t">${hl(x.text, typeof word === 'function' ? word(x) : word)}</span><span class="mono tw-id">${esc(x.id)}</span></div>`).join('')}</div>`).join('')}</div></section>`;
+}
+function termDetail(o){
+  const ws = o.avoidS ? o.avoidS.split(/[·,/]/).map(w => w.trim()).filter(w => w.length >= 2) : [];
+  const cl = termCls(o), name = cl.k === 'swap' && cl.to ? `<s>${esc(o.term)}</s><span class="tto">→</span>${esc(cl.to)}` : esc(o.term);
+  return {key: o.term, title: o.mean || '뜻이 비어 있습니다',
+    lead: `<dl class="tlead"><dt>용어</dt><dd class="tname">${name}${o.latin ? '<span class="lat">영문 고정</span>' : ''}</dd>${cl.k === 'swap' && cl.to && o.mean && cl.to.includes(o.mean) ? '' : `<dt>뜻</dt><dd class="tmean">${o.mean ? esc(o.mean) : '<span class="mut">뜻이 비어 있습니다</span>'}</dd>`}</dl>`, head: termState(o).replace(/<div class="sub">.*<\/div>$/, '') + `<span class="mut">기획 ${o.plans.length} · 화면 ${o.nScr} · 쓰인 곳 ${o.at.length}${o.why ? ' · ' + esc(o.why) : ''}</span>`,
+    fields: [['용어집 분류', (c => c.k === 'gl' ? `${c.g} ${c.gt} · 용어집에 있음` : c.k === 'add' ? `${c.g} ${c.gt}${c.sec ? ' › ' + c.sec : ''} · 추가 후보` : `용어집에 없음 · ${c.gt}${c.sec && c.sec !== c.gt ? ' › ' + c.sec : ''}`)(termCls(o))], ['화면 종류', o.kind], ['쓰지 않는 말', o.avoidS], ...o.items.map(i => [`${i.plan.title} · 용어집 반영 안`, [fmtApply(i.apply), i.note].filter(Boolean).join(' · ')])],
+    html: termWhere(o.at, o.term, '쓰인 곳', '기획마다 용어집 시트 「쓰인 곳」의 문구 ID 로 찾은 정확한 자리입니다. 같은 화면에서도 탭 · 창 · 영역 · 종류가 다르면 따로 적습니다.')
+      + termWhere(o.avoid_at, x => ws.find(w => x.text.includes(w)), '쓰지 않는 말이 남은 다른 곳', '위 「쓰인 곳」 밖에서 화면 글자에 쓰지 않는 말이 들어 있는 문구입니다. 유사어를 그대로 써야 하는 자리(고유 이름 · 표준 약어)인지 보고 판단합니다.'),
+    links: o.plans.map(p => `<a class="btn sm" href="${p.ui.href}" download>${esc(p.title)} 화면 문구 엑셀</a>`).join(''), foot: '상태 · 용어집 반영은 기획마다 화면문구 엑셀 용어집 시트가 정합니다. 미확정 용어는 결정 회의 「용어집 결정」에 모입니다.'};
+}
+// 용어 하나의 자리: 개념 위계(용어집 분류 › 묶음)와 성격(용어집 · 추가 후보 · 바꿀 말 · 뜻 확인 · 용어집 밖)
+// 근거는 엑셀 칸뿐이다: 용어집 분류(POL-GLOSSARY 표) · 「용어집 반영」(T○에 더함(묶음) · 쓰지 않는 표기 · 뜻 확인 · 올리지 않음(이유)) · 「쓰지 않는 말」
+const OUTB = [[/열|항목/, '열 · 항목 이름'], [/화면|부품|버튼|영역|동작/, '화면 · 부품 이름'], [/단위|약어/, '단위 · 약어'], [/메뉴/, '메뉴 이름'], [/알림|이벤트/, '알림 이벤트 이름'], [/일반어/, '일반어']];
+function termCls(o){
+  if (o.__c) return o.__c;
+  const ap = o.items.map(i => `${i.apply || ''} ${i.note || ''}`).join(' '), ap0 = o.items.map(i => i.apply || '').join(' ');
+  const avoidW = o.avoid.flatMap(a => a.split(/\s*[·,]\s*/)).map(w => w.replace(/\(.*$/, '').trim()).filter(w => w.length >= 2);
+  const glt = D.glt || {}, add = ap0.match(/T(\d+)에 더함(?:\(([^)]*)\))?/);
+  let c;
+  if (o.gl) c = {k: 'gl', g: o.gl.tid, gt: o.gl.title, sec: ''};
+  else if (avoidW.some(w => o.term.includes(w))){
+    // 바꿀 말: 「→ X」 · 「「X」로 띄어」 · 짧은 뜻. 쓰지 않는 말이 용어의 일부면 그 부분만 바꾼 이름을 보인다(업무라벨 연결 → 업무 라벨 연결)
+    const std = ((ap.match(/→\s*「?([^·()」,\n]+?)\s*(?:[·()」,\n]|$)/) || [])[1] || (ap.match(/「([^」]+)」로 띄어/) || [])[1] || (o.mean && o.mean.length <= 8 && !/[.(]/.test(o.mean) && !/이름|표시|단위/.test(o.mean) ? o.mean : '')).trim();
+    const w = avoidW.filter(x => o.term.includes(x)).sort((a, b) => b.length - a.length)[0], rest = o.term.replace(w, '').trim();
+    const to = !std ? '' : rest && !std.includes(rest) ? o.term.replace(w, std) : std;
+    c = {k: 'swap', g: 'swap', gt: '바꿀 말', sec: '', to: to === o.term ? '' : to};
+  } else if (add) c = {k: 'add', g: 'GLOSSARY-T' + add[1], gt: glt['GLOSSARY-T' + add[1]] || '용어집에 아직 없는 표', sec: (add[2] || '').trim()};
+  else if (/^\s*뜻 확인/.test(ap0) || o.items.some(i => /^뜻 확인/.test(i.apply || ''))) c = {k: 'ask', g: 'ask', gt: '뜻 확인 필요', sec: '', q: o.items.map(i => String(i.apply || '').replace(/^뜻 확인:\s*/, '')).filter(Boolean).join(' · ')};
+  else {
+    const why = (ap0.match(/올리지 않음\(([^)·]*)/) || [])[1] || o.why || '';
+    const b = (OUTB.find(([re]) => re.test(why)) || [, '그 밖'])[1];
+    c = {k: 'out', g: 'out:' + b, gt: b, sec: why.trim()};
+  }
+  return (o.__c = c);
+}
+const termNo = g => +((g.match(/T(\d+)$/) || [])[1] || 0);
+const scrKey = x => x.plan.key + '|' + x.path.join('|') + '|' + (x.stype || '');   // 같은 화면이라도 페이지 · 모달은 따로
+const scrName = p => p.filter(v => v && v !== '—');
+const termCell = o => { const c = termCls(o); return c.k === 'swap' ? `<b class="uit no">${esc(o.term)}</b>${c.to ? `<span class="tto">→</span><b class="uit">${esc(c.to)}</b>` : ''}` : `<b class="uit">${esc(o.term)}</b>${o.latin ? '<span class="lat">영문 고정</span>' : ''}`; };
+const UF = {plan: '', q: '', t: 'term', g: '', s: ''};
+function vUi(key, view){
+  const all = D.plans.filter(p => p.ui);
+  crumb([['품질', '#/qa', '품질 현황'], ['화면 문구 · 용어']]);
+  page.className = 'wrap';
+  if (!all.length){ page.innerHTML = pgtabs('화면 문구 · 용어') + empty('화면 문구 검사 결과가 없습니다.', '품질 검사에서 화면 문구를 모으면 「화면문구.xlsx」가 qa 폴더에 올라오고 여기에 보입니다.'); return; }
+  if (key !== undefined) UF.plan = all.some(p => p.key === key) ? key : '';
+  if (UF.plan && !all.some(p => p.key === UF.plan)) UF.plan = '';
+  const V = {open: 'term', all: 'term', menu: 'screen'}; view = V[view] || view;
+  if (['term', 'screen', 'fix'].includes(view)) UF.t = view;
+  const ps = UF.plan ? all.filter(p => p.key === UF.plan) : all, T = uiAll(ps.map(p => p.key));
+  const c = ps.reduce((a, p) => { Object.keys(a).forEach(k => a[k] += p.ui.cnt[k] || 0); return a; }, {'정상': 0, '수정': 0, '보류': 0, '미검토': 0}), tot = ps.reduce((a, p) => a + p.ui.total, 0);
+  // 개념 위계: 분류 → 묶음 → 용어
+  const G = {}; T.forEach(o => { const k = termCls(o); (G[k.g] = G[k.g] || {g: k.g, t: k.gt, k: k.k, rows: []}).rows.push(o); });
+  const gl = Object.values(G).filter(x => x.g.startsWith('GLOSSARY-')).sort((a, b) => termNo(a.g) - termNo(b.g));
+  const out = Object.values(G).filter(x => !x.g.startsWith('GLOSSARY-')).sort((a, b) => ({swap: 0, ask: 1}[a.k] ?? 2) - ({swap: 0, ask: 1}[b.k] ?? 2) || (a.t === '그 밖') - (b.t === '그 밖') || b.rows.length - a.rows.length);
+  const nk = k => T.filter(o => termCls(o).k === k).length;
+  // 화면 위계: 메뉴 → 화면 → 그 화면의 용어
+  const S = {}; T.forEach(o => o.at.forEach(x => { const k = scrKey(x); const s = S[k] || (S[k] = {k, plan: x.plan, path: x.path, stype: x.stype, terms: new Map()}); if (!s.terms.has(o)) s.terms.set(o, []); s.terms.get(o).push(x); }));
+  const scr = Object.values(S).sort((a, b) => a.path.map(v => v || '—').join('|').localeCompare(b.path.map(v => v || '—').join('|'), 'ko') || (a.stype || '').localeCompare(b.stype || '', 'ko'));
+  const nOff = s => [...s.terms.keys()].filter(o => ['swap', 'ask'].includes(termCls(o).k)).length;
+  const hk = k => `#/ui/${UF.plan || 'all'}/${k}`, nFix = c['수정'] + c['보류'];
+  const src = ps.map(p => `<a class="bchip src" href="${p.ui.href}" download title="정본 엑셀 받기"><svg class="ic"><use href="#i-download"/></svg>${esc(p.title)}<span>${ymd6(p.ui.day)} 수집</span></a>${p.ui.req ? `<a class="bchip src" href="${p.ui.req}" target="_blank" rel="noopener">${ps.length > 1 ? esc(p.title) + ' ' : ''}변경 요청 문서</a>` : ''}`).join('');
+  const cnt = {term: `용어 <b>${T.length}개</b> · 용어집에 있음 ${nk('gl')} · 추가 후보 ${nk('add')} · 바꿀 말 ${nk('swap')} · 뜻 확인 필요 ${nk('ask')} · 용어집에 없음 ${nk('out')}`,
+    screen: `화면 <b>${scr.length}개</b> · 바꿀 말 · 뜻 확인이 있는 화면 ${scr.filter(nOff).length}`,
+    fix: `바꿀 문구 <b>${c['수정']}줄</b> · 보류 ${c['보류']}줄 <span class="bnote">개발 화면에서 모은 문구 ${tot.toLocaleString()}줄 가운데 ${(c['정상'] + c['수정'] + c['보류']).toLocaleString()}줄을 검토했습니다. 같은 문구는 한 줄로 셉니다.</span>`}[UF.t];
+  page.innerHTML = pgtabs('화면 문구 · 용어', [['term', '용어', hk('term'), T.length], ['screen', '화면별', hk('screen'), scr.length], ['fix', '바꿀 문구', hk('fix'), nFix]], UF.t)
+    + `<p class="lead">개발 화면에 실제로 나온 글자를 모아 용어와 문구를 공통 정책과 비교한 결과입니다.</p>`
+    + basisBox([['건수', cnt], ['출처', src + '<span class="bnote">정본은 기획마다 올라온 화면문구 엑셀입니다. 판단 · 용어집 반영도 엑셀에서 고칩니다.</span>']])
+    + `<div id="u-b"></div>`;
+  const psel = `<select class="ipt sm" id="u-p" aria-label="기획" style="width:auto"><option value="all">기획 전체</option>${all.map(x => `<option value="${x.key}" ${x.key === UF.plan ? 'selected' : ''}>${esc(x.title)}</option>`).join('')}</select>`;
+  const srch = ph => `<div class="srch sm grow"><svg class="ic"><use href="#i-search"/></svg><input id="u-q" type="search" placeholder="${ph}" aria-label="검색" value="${esc(UF.q)}"></div>`;
+  const bind = () => { $('#u-p').onchange = e => { UF.q = ''; UF.g = UF.s = ''; panel(''); location.hash = `#/ui/${e.target.value}/${UF.t}`; };
+    const qi = $('#u-q'); if (qi) qi.oninput = e => { UF.q = e.target.value.trim().toLowerCase(); const pos = e.target.selectionStart; draw(); const n = $('#u-q'); n.focus(); n.setSelectionRange(pos, pos); };
+    $('#u-b').onclick = e => { const ix = e.target.closest('[data-g],[data-s]'); if (ix){ if (ix.dataset.g !== undefined) UF.g = ix.dataset.g; else UF.s = ix.dataset.s; UF.q = ''; panel(''); draw(); $('#pg').scrollTop = Math.min($('#pg').scrollTop, $('#u-b').offsetTop - 12); return; }
+      const tr = e.target.closest('[data-term]'); if (tr) panel(tr.dataset.term); };
+    rzScan(); fitTables(); };
+  const hitT = (o, q) => (o.term + ' ' + o.mean + ' ' + o.avoidS + ' ' + (termCls(o).to || '') + ' ' + o.at.map(x => x.text + ' ' + x.path.join(' ')).join(' ')).toLowerCase().includes(q);
+  const ixItem = (attr, v, on, label, n, warn) => `<button type="button" class="uix-i ${on ? 'on' : ''}" data-${attr}="${esc(v)}"><span>${label}</span><em class="${warn ? 'w' : ''}">${n}</em></button>`;
+  const row = (o, mid) => `<tr class="clk ${o.term === DW.sel ? 'on' : ''}" data-term="${esc(o.term)}" data-k="${esc(o.term)}" tabindex="0"><td>${termCell(o)}</td><td>${mid}</td><td class="num">${o.at.length}곳<div class="sub">${o.plans.length > 1 ? `기획 ${o.plans.length} · ` : ''}화면 ${o.nScr}</div></td></tr>`;
+  const draw = () => {
+    const q = UF.q;
+    if (UF.t === 'term'){
+      const groups = [...gl, ...out];
+      if (!groups.some(x => x.g === UF.g)) UF.g = (groups[0] || {}).g || '';
+      const nav = `<div class="uix-h">용어집 분류</div>${gl.map(x => ixItem('g', x.g, x.g === UF.g, esc(x.t), x.rows.length)).join('') || '<div class="uix-e">없습니다</div>'}<div class="uix-h">용어집에 없음</div>${out.map(x => ixItem('g', x.g, x.g === UF.g, esc(x.t), x.rows.length, ['swap', 'ask'].includes(x.k))).join('')}`;
+      const show = q ? groups.map(x => ({...x, rows: x.rows.filter(o => hitT(o, q))})).filter(x => x.rows.length) : groups.filter(x => x.g === UF.g);
+      const shown = [];
+      const body = show.map(x => {
+        const secs = {}; x.rows.forEach(o => { const cl = termCls(o), s = cl.k === 'gl' ? '' : cl.k === 'add' ? (cl.sec || '묶음 없음') : cl.sec; (secs[s] = secs[s] || []).push(o); });
+        const order = Object.keys(secs).sort((a, b) => (a !== '') - (b !== '') || secs[b].length - secs[a].length);
+        const head = `<tr class="grp g0"><td colspan="3"><b>${esc(x.t)}</b>${x.g.startsWith('GLOSSARY-') ? ` <span class="mono mut">${x.g}</span>` : ''}<span class="gcnt">용어 ${x.rows.length}개</span></td></tr>`;
+        return head + order.map(s => {
+          const rs = secs[s], k0 = termCls(rs[0]).k;
+          const lab = k0 === 'gl' ? '용어집에 있음' : k0 === 'add' ? s : s;
+          const tag = k0 === 'add' ? '<span class="stag">추가 후보</span>' : '';
+          const sh = lab ? `<tr class="grp scr"><td colspan="3"><b>${esc(lab)}</b>${tag}<span class="gcnt">${rs.length}</span></td></tr>` : '';
+          return sh + rs.map(o => { shown.push(o); const cl = termCls(o); const ex = cl.k === 'swap' && (!o.mean || cl.to.includes(o.mean)) ? `<div class="sub">화면 글자</div>${esc((o.at[0] || {}).text || '-')}` : esc(o.mean || '-'); return row(o, `${ex}${cl.k === 'ask' && cl.q ? `<div class="sub">${esc(cl.q)}</div>` : ''}`); }).join('');
+        }).join('');
+      }).join('');
+      $('#u-b').innerHTML = `<div class="uix"><nav class="uix-n card" aria-label="용어 분류">${nav}</nav><div class="card"><div class="tbar">${psel}${srch('용어 · 뜻 · 화면 글자 검색')}<span class="cnt">${q ? `검색 결과 ${shown.length}개` : `용어 ${shown.length}개`}</span></div>`
+        + (shown.length ? `<div class="tscroll"><table class="tb uitb htb"><thead><tr><th style="width:30%">용어</th><th>뜻</th><th class="num" style="width:130px">쓰인 곳</th></tr></thead><tbody>${body}</tbody></table></div>` : empty('조건에 맞는 용어가 없습니다.', '검색어를 줄입니다.')) + '</div></div>';
+      LD = {rows: shown, key: o => o.term, detail: termDetail, el: $('#u-b')};
+    } else if (UF.t === 'screen'){
+      const fs = q ? scr.filter(s => (scrName(s.path).join(' ') + ' ' + [...s.terms.keys()].map(o => o.term).join(' ')).toLowerCase().includes(q)) : scr;
+      if (!fs.some(s => s.k === UF.s)) UF.s = (fs[0] || {}).k || '';
+      let last = ''; const nav = `<div class="uix-c">숫자는 바꿀 말 · 뜻 확인 필요 수</div>` + fs.map(s => { const p = scrName(s.path), h = p.slice(0, 2).join(' › '), n = nOff(s); const g = h !== last ? `<div class="uix-h">${esc(h)}</div>` : ''; last = h;
+        return g + ixItem('s', s.k, s.k === UF.s, `${esc(p.slice(2).join(' › ') || p[p.length - 1])}${s.stype ? ` <small>${esc(s.stype)}</small>` : ''}`, n || '', !!n); }).join('') || '<div class="uix-e">없습니다</div>';
+      const s = fs.find(x => x.k === UF.s), shown = [];
+      let body = empty('조건에 맞는 화면이 없습니다.', '검색어를 줄입니다.');
+      if (s){
+        const ts = [...s.terms.keys()], by = k => ts.filter(o => k(termCls(o), o));
+        const oth = o => { const n = o.nScr - 1; return n > 0 ? `다른 화면 ${n}곳에도` : '이 화면만'; };
+        const txt = o => [...new Set(s.terms.get(o).map(x => x.text))].slice(0, 2).map(t => esc(t)).join('<br>');
+        const sec = (title, rs, mode) => `<section class="usec"><h3>${title}<em>${rs.length}</em></h3>${!rs.length ? '<p class="uix-e">없습니다</p>' : mode === 'row'
+          ? `<table class="tb uitb"><tbody>${rs.map(o => { shown.push(o); const cl = termCls(o); return `<tr class="clk ${o.term === DW.sel ? 'on' : ''}" data-term="${esc(o.term)}" data-k="${esc(o.term)}" tabindex="0"><td style="width:30%">${termCell(o)}</td><td><div class="sub">이 화면 글자</div>${txt(o)}${cl.k === 'ask' && cl.q ? `<div class="sub">${esc(cl.q)}</div>` : ''}</td><td class="num" style="width:120px"><span class="sub">${oth(o)}</span></td></tr>`; }).join('')}</tbody></table>`
+          : `<div class="uchips">${rs.map(o => { shown.push(o); return `<button type="button" class="uchip ${o.term === DW.sel ? 'on' : ''}" data-term="${esc(o.term)}" data-k="${esc(o.term)}">${esc(o.term)}</button>`; }).join('')}</div>`}</section>`;
+        const p = scrName(s.path);
+        body = `<div class="ush"><span class="crumbs">${p.slice(0, -1).map(esc).join('<i>›</i>')}</span><b>${esc(p[p.length - 1])}</b>${s.stype ? `<span class="stype">${esc(s.stype)}</span>` : ''}<span class="gcnt">${ps.length > 1 ? esc(s.plan.title) + ' · ' : ''}용어 ${ts.length}개</span></div>`
+          + sec('바꿀 말', by(cl => cl.k === 'swap'), 'row') + sec('뜻 확인 필요', by(cl => cl.k === 'ask'), 'row')
+          + sec('이 화면에만 쓰는 말', by((cl, o) => cl.k === 'out' && o.nScr <= 1), 'chip') + sec('용어집 추가 후보', by(cl => cl.k === 'add'), 'chip')
+          + sec('여러 화면에 함께 쓰는 이름', by((cl, o) => cl.k === 'out' && o.nScr > 1), 'chip') + sec('용어집 용어', by(cl => cl.k === 'gl'), 'chip');
+      }
+      $('#u-b').innerHTML = `<div class="uix"><nav class="uix-n card" aria-label="화면">${nav}</nav><div class="card"><div class="tbar">${psel}${srch('화면 · 용어 검색')}<span class="cnt">화면 ${fs.length}개</span></div><div class="ubody">${body}</div></div></div>`;
+      LD = {rows: shown, key: o => o.term, detail: termDetail, el: $('#u-b')};
+    } else {
+      $('#u-b').innerHTML = table('<th style="width:96px">ID</th><th style="width:26%">지금 문구</th><th style="width:26%">제안 문구</th><th style="width:90px">판단</th><th>근거</th>', uiFixRows(ps, q) || `<tr><td colspan="5">${empty('조건에 맞는 문구가 없습니다.')}</td></tr>`, {tbar: psel + srch('ID · 문구 · 화면 검색') + `<span class="cnt">수정 ${c['수정']} · 보류 ${c['보류']}</span>`, cls: 'uitb'});
+      LD = null;
+    }
+    bind();
+  };
+  draw();
+}
+
+// 기획 품질 탭 · 개요의 화면 문구 요약 카드
+const uiCard = p => { if (!p.ui) return card('화면 문구 · 용어', empty('화면 문구 검사 결과가 없습니다.', '품질 검사에서 화면 문구를 모으면 「화면문구.xlsx」가 qa 폴더에 올라오고 여기에 보입니다.'), {cls: 'uicard'});
+  const T = uiAll([p.key]), n = k => T.filter(o => termCls(o).k === k).length, h = v => `#/ui/${p.key}/${v}`;
+  return card('화면 문구 · 용어', `<div class="nums uinums"><a href="${h('fix')}"><b>${p.ui.cnt['수정']}</b><span>바꿀 문구</span></a><a href="${h('fix')}"><b>${p.ui.cnt['보류']}</b><span>보류</span></a><a href="${h('term')}" class="w"><b>${n('swap')}</b><span>바꿀 말</span></a><a href="${h('term')}" class="w"><b>${n('ask')}</b><span>뜻 확인 필요</span></a></div>`, {small: `${p.ui.day.replace(/^(\d\d)(\d\d)(\d\d)$/, '20$1-$2-$3')} 수집 · 개발 화면 문구 ${p.ui.total}줄`, right: `<a href="#/ui/${p.key}/term">화면 문구 · 용어 보기</a>`, cls: 'uicard'}); };
+
+// ───────── 포털 쓰는 법 ─────────
+function vHelp(){
+  crumb([['가이드', '#/guides', '가이드 목록'], ['포털 쓰는 법']]);
+  page.className = 'wrap';
+  const step = (n, t, d) => `<li><b>${t}</b>${d ? `<span>${d}</span>` : ''}</li>`;
+  const role = (r, t, items) => card(`${who(r)} ${t}`, `<ol class="hsteps">${items.join('')}</ol>`);
+  page.innerHTML = pgtabs('포털 쓰는 법') + `<p class="lead">포털은 GitHub 확정본(main)을 5분마다 모아 보여 주는 읽기 전용 화면입니다. 여기서 무엇을 할지 찾고, 고치는 일은 원본 파일과 검토 요청(PR)으로 합니다.</p>
+    <div class="grid2" style="margin-bottom:16px">
+    ${role('기획', '결정하고 기획서를 고칠 때', [step(1, '홈 「내 할 일」에서 기획을 고릅니다', '품질 검사를 막는 결정과 기획서를 고칠 결함이 위에서부터 급한 순서로 보입니다.'), step(2, '<a href="#/decide">결정할 것 › 결정 회의</a>에서 고릅니다', '기획 · 종류로 거르고, 줄마다 「고른 안」과 메모를 적습니다. 고른 것은 이 브라우저에만 저장됩니다.'), step(3, '「결정 반영 요청 받기」로 파일을 받아 Claude 에게 줍니다', '「이 결정 반영해 줘」라고 하면 원본 파일을 고쳐 PR 을 엽니다. 머지되면 5분 안에 목록에서 빠집니다.'), step(4, '기획서 결함은 <a href="#/issues/all/defect/!개발">품질 이슈 · 개발 외</a>에서 봅니다', '행을 누르면 재현 절차 · 기대 · 실제 · 화면 사진이 옆에 열립니다. 기획서를 고쳐 PR 로 올립니다(GD-01 절차 C).')])}
+    ${role('개발', '결함을 고칠 때', [step(1, '<a href="#/issues/all/defect/개발">품질 이슈 · 개발</a>을 엽니다', '미해결 · 심각도 높은 순입니다. 위쪽 조건 칩의 ×로 조건을 지웁니다.'), step(2, '행을 누르면 옆 패널에 상세가 열립니다', '↑ ↓ 키나 패널 아래 줄로 다음 결함으로 넘어갑니다. 「링크 복사」로 그 결함 주소를 공유합니다.'), step(3, '「목록 받기 (CSV)」로 지금 조건의 목록을 받습니다', '엑셀에서 바로 열립니다. 지라 등록 · 회의 공유에 씁니다.'), step(4, '고친 뒤에는 QA 가 다음 차수에 다시 확인합니다', '상태는 정본 엑셀이 정합니다. 포털에서는 바꾸지 않습니다.')])}
+    ${role('디자인', '디자인 · 화면 문구를 볼 때', [step(1, '<a href="#/issues/all/defect/디자인">품질 이슈 · 디자인</a>에서 디자인 누락 · 불일치를 봅니다'), step(2, '<a href="#/ui">품질 › 화면 문구 · 용어</a>에서 바꿀 문구와 미확정 용어를 봅니다', '제안 문구는 초록, 쓰지 않는 말은 취소선으로 보입니다. 정본은 화면문구 엑셀입니다.')])}
+    ${role('정책', '공통 정책을 정할 때', [step(1, '<a href="#/open/all">공통 정책 › 정책 미결</a>에서 미확정 · 코드 차이를 봅니다', '「따르는 기획」 수가 많을수록 먼저 정합니다.'), step(2, '결정 회의에서 「기획 · 정책 전체 › 공통 정책」으로 거르면 정책 쪽만 모입니다'), step(3, '용어는 결정 회의 「용어집 결정」에 모입니다', '확정하면 POL-GLOSSARY 에도 올립니다.')])}
+    </div>
+    ${card('자주 묻는 것', `<dl class="faq">
+      <dt>숫자가 화면마다 다르게 보입니다</dt><dd>숫자 타일은 누르면 나오는 목록의 건수입니다. 품질요약(품질 검사가 함께 올리는 요약)과 다르면 타일 아래에 「품질요약은 n건」으로 함께 적습니다. 품질요약이 초안일 때 생깁니다.</dd>
+      <dt>여기서 고칠 수 있나요?</dt><dd>없습니다. 포털은 읽기만 합니다. 기획서 · 정의서 · 정책은 GitHub 원본을 고쳐 PR 로, 품질 결과는 정본 엑셀을 고쳐 PR 로 올립니다. 결정은 결정 회의 파일을 Claude 에게 주면 PR 까지 만듭니다.</dd>
+      <dt>링크 옆 기호는 무엇인가요?</dt><dd>↗ 새 창, → 다른 쪽, 패널 아이콘은 옆 패널, XLS · MD 같은 표시는 그 형식의 파일을 받습니다. 메뉴 아래에도 같은 범례가 있습니다.</dd>
+      <dt>찾고 싶은 ID 가 있습니다</dt><dd>어느 화면에서나 <kbd>/</kbd> 를 누르면 검색 칸으로 갑니다. ID(예: TABLE-26 · BUG-WSQ-005)를 넣으면 그 항목과 그것을 가리키는 문서를 모아 보입니다.</dd>
+      <dt>진행 필요 (QA)는 무엇인가요?</dt><dd>품질 검사를 이어 가려면 준비해야 할 계정 · 데이터 · 환경입니다. 「담당」이 준비하면 QA 가 다음 차수에 이어서 검사합니다.</dd>
+    </dl>`)}
+    <p class="help">절차 전체는 <a href="#/doc/GD-08">GD-08 Claude 와 일하는 법</a> · <a href="#/doc/GD-09">GD-09 품질 검사 운영</a>에 있습니다.</p>`;
+}
+
+function vQa(key){
+  if (key && D.plans.some(p => p.key === key)){ location.replace('#/plan/' + key + '/qa'); return; }
+  const qp = D.plans.filter(p => (p.qa || []).length);
+  page.className = 'wrap';
+  if (key){
+    const p = D.plans.find(x => x.key === key); if (!p || !(p.qa || []).length) return vQa();
+    crumb([['품질', '#/qa'], [esc(p.title)]]);
+    page.innerHTML = head({title: `${esc(p.title)} 품질`, meta: `<span class="mono">${p.code}</span><a href="#/plan/${p.key}">기획서 · 정의서</a><a href="${D.repo}/tree/main/${p.dir}/qa" target="_blank" rel="noopener">원본 qa 폴더 ↗</a>`, now: qaLatest(p).replace('class="help"', '')})
+      + qsHead(p) + qaTiles(p.key, true) + qsNext(p) + `<div class="grid2" style="margin-bottom:16px">${roundCard(p)}${catCard(p.key)}</div><div class="stack">${qaRounds(p)}</div>`
+      + `<span class="help">원본은 기획 폴더의 qa 폴더에 있습니다. 실제 데이터가 들어 있어 사내에서만 봅니다. 엑셀이 정본입니다. 상태는 정본 엑셀이 정합니다. 결정은 <a href="#/decide">결정 회의</a>에서 고릅니다. 기준: ${gd09()}</span>`;
+    return;
+  }
+  crumb([['품질'], ['품질 현황']]);
+  const c = qaCount('');
+  page.innerHTML = pgtabs('품질 현황')
+    + `<p class="lead">기획서대로 동작하는지 차수마다 검사한 결과입니다. 결함은 고칠 곳(개발 · 기획)으로 나눠 봅니다.</p>`
+    + qaTiles('') + `<div class="grid2" style="margin-bottom:16px">${qp.map(p => roundCard(p, true)).join('')}</div>` + catCard('')
+    + basisBox([['보는 범위', `품질 검사를 한 기획 <b>${qp.length}개</b> · 미해결만 셉니다`], ['통과율', '통과 ÷ (통과 + 실패). 차단 · 보류 · 미실행은 넣지 않습니다'],
+        ['출처', srcChips(qp.map(p => p.key)) + `<span class="bnote">기획마다 가장 늦은 차수의 테스트결과 엑셀입니다. 기준: ${gd09()}</span>`]]);
+}
+function issueFields(i){
+  return ({
+    defect: [['범주', i.cat], ['유형', i.type], ['우선순위', i.pri], ['화면', i.screen], ['관련 TC', i.tc], ['재현 절차', i.steps], ['기대', i.expected], ['실제', i.actual], ['근거', i.basis], ['증거', i.evidence], ['발견 차수', /^\d+$/.test(i.found) ? i.found + '차' : i.found], ['확인 차수', /^\d+$/.test(i.verified) ? i.verified + '차' : i.verified]],
+    decision: [['구분', i.cat], ['영역', i.type], ['화면', i.screen], ['지금 동작', i.now], ['공통 정책', i.policy], ['선택지', i.options], ['추천', i.rec], ['이유', i.why], ['생기는 일', i.effect], ['근거 사실', i.basis], ['정하기 전까지', i.until], ['물을 곳', i.owner], ['결정 내용', i.decided]],
+    todo: [['단계', stepName(i.cat)], ['이유', i.why], ['관련 TC', i.tc], ['다시 돌릴 조건', i.after]],
+    ux: [['종류', i.cat], ['화면', i.screen], ['하려던 일', i.task], ['관찰', i.actual], ['영향', i.effect], ['근거', i.basis], ['효과 · 비용', [i.gain, i.cost].filter(Boolean).join(' · ')], ['관련 미결정', i.oq]],
+  }[i.kind] || []);
+}
+const IF = {state: 'open', owner: '', sev: '', q: ''};
+function vIssues(plan, kind, owner, sel){
+  plan = D.plans.some(p => p.key === plan) ? plan : ''; kind = IK[kind] ? kind : 'defect';
+  if (owner && owner !== '-') IF.owner = owner;
+  if (sel) DW.sel = sel;
+  const base = D.issues.filter(i => !plan || i.plan === plan);
+  crumb([['품질', '#/qa', '품질 현황'], [kind === 'todo' ? '진행 필요 (QA)' : '품질 이슈', plan ? (kind === 'todo' ? '#/issues/all/todo' : '#/issues') : ''], ...(plan ? [[esc(planBy(plan).title)]] : [])].filter((x, i, a) => i < a.length - 1 || x[0]));
+  page.className = 'wrap';
+  const teams = ['기획', '개발', '디자인'];
+  const extra = {defect: '범주', decision: '구분', todo: '단계', ux: '종류'}[kind];
+  page.innerHTML = (kind === 'todo' ? pgtabs(`${plan ? esc(planBy(plan).title) + ' ' : ''}진행 필요 (QA)`) + '<p class="lead">품질 검사를 이어 가려면 준비해야 할 계정 · 데이터 · 환경 · 확인입니다. 「담당」이 준비하면 QA가 다음 차수에 이어서 검사합니다. 「단계」는 품질 검사의 어느 단계가 막혔는지입니다.</p>' : pgtabs(`${plan ? esc(planBy(plan).title) + ' ' : ''}품질 이슈`, Object.entries(IK).filter(([k]) => k !== 'decision' && k !== 'todo').map(([k, t]) => [k, t, `#/issues/${plan || 'all'}/${k}`, base.filter(i => i.kind === k && i.open && !DECIDE_CATS.includes(i.cat)).length]), kind))
+    + `<div id="isum"></div><div id="ilist"></div>`;
+  const tbar = () => `<select class="ipt sm" id="i-plan" aria-label="기획" style="width:auto"><option value="all">기획 전체</option>${D.plans.filter(p => D.issues.some(i => i.plan === p.key)).map(p => `<option value="${p.key}" ${p.key === plan ? 'selected' : ''}>${esc(p.title)}</option>`).join('')}</select>
+    <span class="seg" id="i-state"><button type="button" data-v="open" class="${IF.state === 'open' ? 'on' : ''}">미해결</button><button type="button" data-v="all" class="${IF.state === 'all' ? 'on' : ''}">전체</button></span>
+    <select class="ipt sm" id="i-owner" aria-label="담당" style="width:auto"><option value="">담당 전체</option>${kind === 'defect' ? `<option value="!개발" ${IF.owner === '!개발' ? 'selected' : ''}>개발 외</option>` : ''}${teams.map(o => `<option ${o === IF.owner ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>
+    ${kind === 'defect' ? `<select class="ipt sm" id="i-sev" aria-label="심각도" style="width:auto"><option value="">심각도 전체</option>${SV.map(o => `<option ${o === IF.sev ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>` : ''}
+    <div class="srch sm grow"><svg class="ic"><use href="#i-search"/></svg><input id="i-q" type="search" placeholder="ID 또는 단어 검색" aria-label="검색" value="${esc(IF.q)}"></div><span class="cnt" id="i-n"></span><button type="button" class="btn sm" id="i-csv" title="지금 조건의 목록을 CSV 로 받습니다(엑셀에서 열림)">목록 받기 (CSV)</button>`;
+  const draw = (focusQ) => {
+    if (!['', '!개발', ...teams].includes(IF.owner)) IF.owner = '';
+    const oldC = i => kind === 'defect' && DECIDE_CATS.includes(i.cat);
+    const nOld = base.filter(i => i.kind === kind && (IF.state === 'all' || i.open) && oldC(i)).length;
+    const rs = base.filter(i => i.kind === kind && (IF.state === 'all' || i.open) && (IF.old || !oldC(i)) && (!IF.owner || (IF.owner === '!개발' ? own(i.owner) !== '개발' : own(i.owner) === IF.owner)) && (kind !== 'defect' || !IF.sev || i.sev === IF.sev)
+      && (!IF.q || Object.values(i).join(' ').toLowerCase().includes(IF.q)));
+    rs.sort((a, b) => (b.open - a.open) || ixOf(SV, a.sev) - ixOf(SV, b.sev) || ixOf(PR, a.pri) - ixOf(PR, b.pri) || a.id.localeCompare(b.id, 'en', {numeric: true}));
+    const op = rs.filter(i => i.open), cnt = k => op.filter(i => i.sev === k).length, ow = {}; op.forEach(i => { ow[own(i.owner)] = (ow[own(i.owner)] || 0) + 1; });
+    const fchip = (k, v, on, r) => `<span class="bchip ${on ? 'on' : ''}">${k} <b>${esc(v)}</b>${on ? `<button type="button" data-rst="${r}" title="${k} 조건 지우기" aria-label="${k} 조건 지우기">×</button>` : ''}</span>`;
+    const all = base.filter(i => i.kind === kind), hasPri = all.some(i => i.pri);
+    $('#isum').innerHTML = basisBox([
+      ['보는 범위', fchip('기획', plan ? planBy(plan).title : '전체', !!plan, 'plan') + fchip('상태', IF.state === 'open' ? '미해결만' : '전체', IF.state !== 'open', 'state')
+        + fchip('담당', IF.owner === '!개발' ? '개발 외' : IF.owner || '전체', !!IF.owner, 'owner') + (kind === 'defect' ? fchip('심각도', IF.sev || '전체', !!IF.sev, 'sev') : '') + (IF.q ? fchip('검색어', IF.q, true, 'q') : '')
+        + `<span class="bnum"><b>${rs.length.toLocaleString()}건</b> / ${IK[kind]} 전체 ${all.length.toLocaleString()}건</span>`],
+      nOld ? ['예전 범주', `${fchip('기획 누락 · 정책 충돌 · 의도 불일치', IF.old ? `${nOld}건 함께 보는 중` : `${nOld}건 뺌`, !!IF.old, 'old')}${IF.old ? '' : ` <button type="button" class="btn sm" data-old="1">함께 보기</button>`}<span class="bnote">지금은 결정 필요로 올리는 범주라 결함 수에 넣지 않습니다(GD-09 4.1).</span>`] : null,
+      op.length ? ['미해결 건수', `${op.length}건${kind === 'defect' ? ` · ${SV.filter(cnt).map(k => `${k} ${cnt(k)}`).join(' · ')}` : ''} <span class="mut">|</span> 담당 ${Object.entries(ow).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${esc(k)} ${n}`).join(' · ')}`] : null,
+      ['출처', srcChips([...new Set(base.map(i => i.plan))]) + `<span class="bnote">기획마다 가장 늦은 차수의 테스트결과 엑셀에서 모았습니다. 상태는 정본 엑셀이 정합니다. 결정은 <a href="#/decide">결정 회의</a>에서 고릅니다. 기준: ${gd09()}</span>`]]);
+    const cols = [{h: 'ID', cls: 'id', w: '130px', v: i => esc(i.id)}, {h: '제목', v: i => `<span class="ttl">${esc(i.title || '-')}</span>${plan ? '' : `<div class="sub">${esc(planBy(i.plan).title)}</div>`}`}, {h: extra, cls: 'nw opt', w: kind === 'todo' ? '170px' : '130px', v: i => esc(kind === 'todo' ? stepName(i.cat) || '-' : i.cat || '-')}];
+    if (kind === 'defect') cols.push({h: '심각도', cls: 'nw', w: '90px', v: i => sev(i.sev)});
+    cols.push({h: '상태', cls: 'nw', w: '100px', v: i => `<span class="bdg ${i.open ? 'warn' : 'ok'}">${esc(i.status)}</span>`}, {h: '담당', cls: 'nw opt', w: '100px', v: i => esc(own(i.owner))});
+    listView($('#ilist'), {rows: rs, key: i => i.id, cols, dim: i => !i.open, tbar: tbar(), empty: '조건에 맞는 이슈가 없습니다.',
+      detail: issueDetail,
+      bind: () => {
+        $('#i-n').textContent = `총 ${rs.length.toLocaleString()}건`;
+        $('#i-csv').onclick = () => csvDown(`${IK[kind]}-${plan ? planBy(plan).title : '전체'}${IF.owner ? '-' + (IF.owner === '!개발' ? '개발 외' : IF.owner) : ''}`, ['ID', '제목', '기획', extra, '심각도', '우선순위', '상태', '담당', '관련 TC', '차수', '주소'], rs.map(i => [i.id, i.title, planBy(i.plan).title, kind === 'todo' ? stepName(i.cat) : i.cat, i.sev, i.pri, i.status, own(i.owner), i.tc, i.round, location.origin + location.pathname + '#/issue/' + i.id]));
+        $('#i-plan').onchange = e => { location.hash = `#/issues/${e.target.value}/${kind}`; };
+        $('#i-state').onclick = e => { const b = e.target.closest('[data-v]'); if (b){ IF.state = b.dataset.v; draw(); } };
+        $('#i-owner').onchange = e => { IF.owner = e.target.value; draw(); };
+        if ($('#i-sev')) $('#i-sev').onchange = e => { IF.sev = e.target.value; draw(); };
+        const inp = $('#i-q'); inp.oninput = () => { IF.q = inp.value.trim().toLowerCase(); draw(inp.selectionStart); };
+        if (focusQ !== undefined){ inp.focus(); inp.setSelectionRange(focusQ, focusQ); }
+      }});
+  };
+  $('#isum').onclick = e => { const b = e.target.closest('[data-rst]'); if (!b) return; const r = b.dataset.rst;
+    if (r === 'plan'){ location.hash = `#/issues/all/${kind}`; return; }
+    if (r === 'state') IF.state = 'open'; else IF[r] = ''; draw(); };
+  $('#isum').addEventListener('click', e => { if (e.target.closest('[data-old]')){ IF.old = true; draw(); } });
+  draw();
+}
+
+// ───────── 길 찾기 ─────────
+let lastR = '';
+function route(){
+  const bare = location.hash.replace(/^#/, '');
+  if (bare && !bare.includes('/') && D.plans.some(p => p.key === bare)){ location.replace('#/plan/' + bare); return; }
+  const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
+  const [r, a, b] = h.split('/');
+  const list = r === 'issues' || r === 'issue' || r === 'open' || (r === 'plan' && (b === 'open' || b === 'qa' || !b || b === 'overview'));
+  if (!list || r !== lastR){ DW.sel = ''; panel(''); LD = null; }
+  let active = '#/', sec = 'home';
+  if (r === 'plan'){ vPlan(a, b); active = '#/plan/' + a; sec = 'plans'; }
+  else if (r === 'plans'){ vPlans(a); sec = 'plans'; }
+  else if (r === 'doc'){
+    const rest = h.slice(4); let id = rest, target = '';
+    if (!byDoc[rest]){ const k = rest.lastIndexOf('/'); id = rest.slice(0, k); target = rest.slice(k + 1); }
+    vDoc(id, target); active = '#/doc/' + enc(id);
+    const d = byDoc[id]; sec = !d ? 'home' : d.id === 'GD-09' ? 'qa' : d.kind === 'guide' ? 'guides' : 'policies';
+  }
+  else if (r === 'id'){ vId(a); sec = ''; }
+  else if (r === 'decide'){ vDecide(); active = '#/decide'; sec = 'open'; }
+  else if (r === 'open'){ vOpen(a); active = '#/open/' + (POL_OG.includes(OF.g) ? 'all' : OF.g); sec = POL_OG.includes(OF.g) ? 'policies' : 'open'; }
+  else if ((r === 'issues' && b === 'decision') || (r === 'issue' && (D.issues.find(x => x.id === a) || {}).kind === 'decision')){ if (r === 'issue') OF.q = ''; vOpen('qa', r === 'issue' ? a : ''); active = '#/open/qa'; sec = 'open'; }
+  else if (r === 'search'){ vSearch(h.slice(7)); sec = ''; }
+  else if (r === 'ui'){ vUi(a, b); active = '#/ui'; sec = 'qa'; }
+  else if (r === 'qa'){ vQa(a); active = a ? '#/qa/' + a : '#/qa'; sec = 'qa'; }
+  else if (r === 'issues'){ if (lastR !== 'issues' && lastR !== 'issue') Object.assign(IF, {state: 'open', owner: '', sev: '', q: '', old: false}); vIssues(a, b, h.split('/')[3]); active = b === 'todo' ? '#/issues/all/todo' : '#/issues'; sec = 'qa'; }
+  else if (r === 'issue'){ const it = D.issues.find(x => x.id === a); Object.assign(IF, {state: it && !it.open ? 'all' : 'open', owner: '', sev: '', q: '', old: !!(it && DECIDE_CATS.includes(it.cat))}); vIssues(it ? it.plan : '', it ? it.kind : '', '', it ? it.id : ''); active = '#/issues'; sec = 'qa'; }
+  else if (r === 'policies'){ vPolicies(a); sec = 'policies'; active = a ? '#/policies/' + enc(a) : ''; if (a) setTimeout(() => { const t = document.getElementById('pg-' + enc(a)); if (t && t.nextElementSibling) t.nextElementSibling.scrollIntoView({block: 'start'}); }, 60); }
+  else if (r === 'guides'){ vGuides(); sec = 'guides'; }
+  else if (r === 'help'){ vHelp(); sec = 'guides'; active = '#/help'; }
+  else vHome();
+  lastR = r;
+  nav(sec, active);
+  drawBand();
+  setTimeout(() => { rzScan(); markGo(); }, 0);
+  if (!/doc\/.+\/./.test(h) && !(r === 'policies' && a)) $('#pg').scrollTop = 0;
+}
+// ───────── 표: 열 너비 끌어서 바꾸기 · 가로 스크롤 ─────────
+// 표 머리 칸 오른쪽 경계를 끌면 그 열 너비가 바뀐다. 두 번 누르면 처음 너비로 돌아간다.
+// 열을 넓혀 표가 칸보다 넓어지면 표 상자 안에서 가로로 스크롤한다.
+function enableResize(tb){
+  if (tb.dataset.rz) return; tb.dataset.rz = '1';
+  const ths = [...tb.querySelectorAll('thead th')]; if (ths.length < 2) return;
+  let cg = tb.querySelector('colgroup');
+  const w0 = ths.map(th => th.getBoundingClientRect().width);
+  if (!w0.some(w => w > 0)) { delete tb.dataset.rz; return; }      // 아직 화면에 없는 표는 다음에
+  if (!cg){ cg = document.createElement('colgroup'); cg.innerHTML = ths.map(() => '<col>').join(''); tb.prepend(cg); }
+  const cols = [...cg.children];
+  const fix = () => { cols.forEach((c, i) => { c.style.width = Math.round(w0[i]) + 'px'; }); tb.style.tableLayout = 'fixed'; tb.style.width = Math.round(w0.reduce((a, b) => a + b, 0)) + 'px'; tb.style.minWidth = '100%'; };
+  let fixed = false;
+  ths.forEach((th, i) => {
+    const h = document.createElement('span'); h.className = 'rz'; h.title = '끌어서 열 너비 바꾸기 · 두 번 누르면 처음대로'; th.appendChild(h);
+    h.addEventListener('pointerdown', e => {
+      e.preventDefault(); e.stopPropagation();
+      if (!fixed){ fix(); fixed = true; }
+      const x0 = e.clientX, c0 = parseFloat(cols[i].style.width), t0 = parseFloat(tb.style.width);
+      h.setPointerCapture(e.pointerId); tb.classList.add('rzing');
+      const mv = ev => { const w = Math.max(48, c0 + ev.clientX - x0); cols[i].style.width = w + 'px'; tb.style.width = (t0 + w - c0) + 'px'; };
+      const up = () => { h.removeEventListener('pointermove', mv); h.removeEventListener('pointerup', up); tb.classList.remove('rzing'); };
+      h.addEventListener('pointermove', mv); h.addEventListener('pointerup', up);
+    });
+    h.addEventListener('click', e => e.stopPropagation());
+    h.addEventListener('dblclick', e => { e.stopPropagation(); if (!fixed) return; cols[i].style.width = Math.round(w0[i]) + 'px'; tb.style.width = Math.round(w0.reduce((a, b) => a + b, 0) - w0[i] + w0[i]) + 'px'; const sum = cols.reduce((a, c) => a + parseFloat(c.style.width), 0); tb.style.width = sum + 'px'; });
+  });
+  // 행에서도 열 경계(칸 오른쪽 5px)에 마우스를 올리면 끌어서 열 너비를 바꾼다
+  const tbody = tb.tBodies[0];
+  if (tbody){
+    const edge = e => { const td = e.target.closest('td'); if (!td || td.cellIndex >= cols.length - 1 && td.cellIndex !== cols.length - 1) return -1; const r = td.getBoundingClientRect(); return r.right - e.clientX <= 5 && r.right - e.clientX >= -1 ? td.cellIndex : -1; };
+    tbody.addEventListener('pointermove', e => { if (tb.classList.contains('rzing')) return; tbody.classList.toggle('rzedge', edge(e) >= 0); });
+    tbody.addEventListener('pointerleave', () => tbody.classList.remove('rzedge'));
+    tbody.addEventListener('pointerdown', e => {
+      const i = edge(e); if (i < 0) return;
+      e.preventDefault(); e.stopPropagation();
+      if (!fixed){ fix(); fixed = true; }
+      const x0 = e.clientX, c0 = parseFloat(cols[i].style.width), t0 = parseFloat(tb.style.width);
+      tbody.setPointerCapture(e.pointerId); tb.classList.add('rzing');
+      const mv = ev => { const w = Math.max(48, c0 + ev.clientX - x0); cols[i].style.width = w + 'px'; tb.style.width = (t0 + w - c0) + 'px'; };
+      const up = () => { tbody.removeEventListener('pointermove', mv); tbody.removeEventListener('pointerup', up); tb.classList.remove('rzing'); tbody.classList.remove('rzedge'); };
+      tbody.addEventListener('pointermove', mv); tbody.addEventListener('pointerup', up);
+    }, true);
+    tbody.addEventListener('click', e => { if (tb.classList.contains('rzjust')){ e.stopPropagation(); tb.classList.remove('rzjust'); } }, true);
+  }
+}
+const rzScan = () => document.querySelectorAll('table.tb, table.rtable').forEach(enableResize);
+// 다른 쪽으로 넘어가는 링크에 → 아이콘을 붙인다. 표의 행을 누르면 열리는 상세 패널과 구분한다
+const GO_SKIP = '.ptabs a, .rbox .kv, .crumb a, .btn, .bdg, .gdoc, .lead-doc, .pcard .h a, .nums a, .toc a, .toc button, .sum .go, a.rid, .refn, .sec > a, .card > .hd > span a, .stageboard a, .chips a';
+const FT = {xlsx: 'XLS', xls: 'XLS', csv: 'CSV', md: 'MD', html: 'HTML', pdf: 'PDF', zip: 'ZIP', json: 'JSON', png: 'PNG'};
+// 링크 표시: 새 창(↗) · 다른 쪽으로 이동(→) · 받기(파일 형식 아이콘). 옆 패널을 여는 행은 CSS 가 패널 아이콘을 단다
+function markLinks(){ document.querySelectorAll('#page a[href], #pnl a[href], #band a[href]').forEach(a => {
+  if (a.dataset.lk) return; a.dataset.lk = '1'; const h = a.getAttribute('href') || '', m = h.match(/\.([a-z0-9]+)(?:$|[?#])/i), ext = m && FT[m[1].toLowerCase()] ? m[1].toLowerCase() : '';
+  if (!h.startsWith('#') && (a.hasAttribute('download') || ext)){
+    const e = ext || 'file', ic = `<i class="ft ft-${e}" aria-hidden="true">${FT[e] || '파일'}</i>`, old = a.querySelector(':scope > svg.ic');
+    if (old) old.outerHTML = ic; else a.insertAdjacentHTML('afterbegin', ic); a.classList.add('fl');
+    if (a.target === '_blank'){ a.classList.add('ext'); a.innerHTML = a.innerHTML.replace(/\s*↗\s*$/, ''); }
+  } else if (a.target === '_blank' || /^https?:/.test(h)){
+    a.innerHTML = a.innerHTML.replace(/\s*↗\s*$/, ''); const old = a.querySelector(':scope > svg.ic'); if (old && /i-ext/.test(old.innerHTML)) old.remove(); a.classList.add('ext');
+  } }); }
+function fitTables(){
+  // 표는 페이지와 함께 스크롤한다(안쪽 세로 스크롤을 만들지 않음). 가로로 넘칠 때만 표 상자가 가로 스크롤을 갖는다
+  document.querySelectorAll('#page .card>.tscroll').forEach(t => { if (t.closest('.md')) return;
+    t.style.maxHeight = '';
+    const tb = t.querySelector('table');
+    t.classList.toggle('fits', !tb || tb.scrollWidth <= t.clientWidth + 1);
+    if (tb && !tb.__ro){ tb.__ro = new ResizeObserver(() => t.classList.toggle('fits', tb.scrollWidth <= t.clientWidth + 1)); tb.__ro.observe(tb); } });
+}
+addEventListener('resize', () => { clearTimeout(window.__ft); window.__ft = setTimeout(fitTables, 80); });
+function markGo(){ fitTables(); markLinks(); document.querySelectorAll('#page a[href^="#/"], #pnl a[href^="#/"]').forEach(a => { if (a.dataset.go || a.matches(GO_SKIP)) return; a.dataset.go = '1'; a.classList.add('go'); }); }
+let rzT = 0; new MutationObserver(() => { clearTimeout(rzT); rzT = setTimeout(() => { rzScan(); markGo(); }, 30); }).observe(document.body, {childList: true, subtree: true});
+window.addEventListener('hashchange', route);
+// 맨 위로: 한 화면 높이 넘게 내려가면 오른쪽 아래에 나타남. 누르면 맨 위로 가고 검색 칸(있으면)으로 포커스
+(() => {
+  const b = document.createElement('button'); b.type = 'button'; b.id = 'totop'; b.title = '맨 위로'; b.setAttribute('aria-label', '맨 위로');
+  b.innerHTML = '<svg class="ic"><use href="#i-up"/></svg>'; document.body.append(b);
+  const pg = $('#pg'), y = () => Math.max(pg.scrollTop, window.scrollY || document.documentElement.scrollTop);
+  const upd = () => b.classList.toggle('on', y() > innerHeight * 0.8);
+  pg.addEventListener('scroll', upd, {passive: true}); addEventListener('scroll', upd, {passive: true}); addEventListener('hashchange', () => setTimeout(upd, 50));
+  b.onclick = () => { pg.scrollTo({top: 0, behavior: 'smooth'}); window.scrollTo({top: 0, behavior: 'smooth'});
+    const q = $('#page input[type=search]'); if (q) setTimeout(() => q.focus({preventScroll: true}), 350); };
+})();
+route();
+</script>
